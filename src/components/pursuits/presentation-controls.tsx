@@ -17,6 +17,7 @@ type PresentationControlsProps = {
   currentScene: number;
   sceneCount: number;
   isPlaying: boolean;
+  canPlayVideo: boolean;
   isMuted: boolean;
   isFullscreen: boolean;
   disabled: boolean;
@@ -36,6 +37,7 @@ export function PresentationControls({
   currentScene,
   sceneCount,
   isPlaying,
+  canPlayVideo,
   isMuted,
   isFullscreen,
   disabled,
@@ -65,15 +67,17 @@ export function PresentationControls({
           >
             <ArrowLeft size={16} />
           </button>
-          <button
-            type="button"
-            onClick={onTogglePlayback}
-            className="grid size-9 shrink-0 place-items-center bg-white text-black transition hover:bg-white/82"
-            aria-label={isPlaying ? "Pause presentation" : "Play presentation"}
-            title={isPlaying ? "Pause" : "Play"}
-          >
-            {isPlaying ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}
-          </button>
+          {canPlayVideo ? (
+            <button
+              type="button"
+              onClick={onTogglePlayback}
+              className="grid size-9 shrink-0 place-items-center bg-white text-black transition hover:bg-white/82"
+              aria-label={isPlaying ? "Pause video" : "Play video"}
+              title={isPlaying ? "Pause video" : "Play video"}
+            >
+              {isPlaying ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={onNext}
@@ -95,15 +99,17 @@ export function PresentationControls({
           <p className="ml-auto whitespace-nowrap font-mono text-[10px] tabular-nums text-white/58 sm:ml-0 sm:text-xs">
             {pad(currentScene)} / {pad(sceneCount)}
           </p>
-          <button
-            type="button"
-            onClick={onToggleMuted}
-            className="grid size-9 shrink-0 place-items-center text-white/68 transition hover:bg-white hover:text-black"
-            aria-label={isMuted ? "Turn audio on" : "Mute audio"}
-            title={isMuted ? "Audio on" : "Mute"}
-          >
-            {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-          </button>
+          {canPlayVideo ? (
+            <button
+              type="button"
+              onClick={onToggleMuted}
+              className="grid size-9 shrink-0 place-items-center text-white/68 transition hover:bg-white hover:text-black"
+              aria-label={isMuted ? "Turn audio on" : "Mute audio"}
+              title={isMuted ? "Audio on" : "Mute"}
+            >
+              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={onToggleFullscreen}

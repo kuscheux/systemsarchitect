@@ -1,20 +1,11 @@
 "use client";
 
-import Image from "next/image";
-import {
-  ArrowLeft,
-  ArrowRight,
-  BookOpen,
-  Check,
-  ChevronRight,
-  X,
-} from "lucide-react";
+import { Check, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import type {
   ProjectDecision,
   PursuitChapter,
   PursuitScene,
-  SourceReference,
   VendorProduct,
 } from "@/data/pursuits/types";
 
@@ -24,9 +15,6 @@ type PresenterDrawerProps = {
   chapter: PursuitChapter;
   products: VendorProduct[];
   decisions: ProjectDecision[];
-  sources: SourceReference[];
-  previewSourceId: string | null;
-  onPreviewSource: (sourceId: string | null) => void;
   onClose: () => void;
 };
 
@@ -36,16 +24,10 @@ export function PresenterDrawer({
   chapter,
   products,
   decisions,
-  sources,
-  previewSourceId,
-  onPreviewSource,
   onClose,
 }: PresenterDrawerProps) {
   const drawerRef = useRef<HTMLElement | null>(null);
   const closeRef = useRef<HTMLButtonElement | null>(null);
-  const previewIndex = sources.findIndex((source) => source.id === previewSourceId);
-  const previewSource = previewIndex >= 0 ? sources[previewIndex] : null;
-
   useEffect(() => {
     if (!open) return;
     const previouslyFocused = document.activeElement as HTMLElement | null;
@@ -54,12 +36,11 @@ export function PresenterDrawer({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        if (previewSourceId) onPreviewSource(null);
-        else onClose();
+        onClose();
         return;
       }
 
-      if (event.key !== "Tab" || previewSourceId) return;
+      if (event.key !== "Tab") return;
       const focusable = drawerRef.current?.querySelectorAll<HTMLElement>(
         "button, summary, a[href], [tabindex]:not([tabindex='-1'])",
       );
@@ -80,7 +61,7 @@ export function PresenterDrawer({
       window.removeEventListener("keydown", onKeyDown);
       previouslyFocused?.focus();
     };
-  }, [onClose, onPreviewSource, open, previewSourceId]);
+  }, [onClose, open]);
 
   if (!open) return null;
 
@@ -178,106 +159,8 @@ export function PresenterDrawer({
             </section>
           ) : null}
 
-          <details className="group mt-8 border-y border-white/12">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-sm font-medium text-white/74 marker:content-none">
-              <span className="inline-flex items-center gap-2">
-                <BookOpen size={15} /> Evidence &amp; source pages
-              </span>
-              <span className="inline-flex items-center gap-2 font-mono text-[10px] text-white/36">
-                22
-                <ChevronRight size={14} className="transition group-open:rotate-90" />
-              </span>
-            </summary>
-            <div className="border-t border-white/12 pb-5 pt-4">
-              <p className="mb-4 text-xs leading-5 text-white/42">
-                Original pages are retained as traceable evidence. Select one for full-resolution review.
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {sources.map((source) => {
-                  const connected = scene.sourcePageIds.includes(source.id);
-                  return (
-                    <button
-                      key={source.id}
-                      type="button"
-                      onClick={() => onPreviewSource(source.id)}
-                      className={`group/source overflow-hidden border text-left transition hover:border-white/48 ${
-                        connected ? "border-[#00a1e0]/70 bg-[#00a1e0]/8" : "border-white/10 bg-white/[0.025]"
-                      }`}
-                    >
-                      <div className="relative aspect-video bg-white">
-                        <Image
-                          src={source.thumbnail}
-                          alt={`Source page ${source.page}: ${source.title}`}
-                          fill
-                          sizes="210px"
-                          className="object-cover"
-                        />
-                      </div>
-                      <span className="flex min-h-12 items-start gap-2 p-2 text-[10px] leading-4 text-white/56 group-hover/source:text-white">
-                        <span className="font-mono text-white/30">{String(source.page).padStart(2, "0")}</span>
-                        {source.title}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </details>
         </div>
       </aside>
-
-      {previewSource ? (
-        <div className="absolute inset-0 z-20 flex flex-col bg-black/96 p-3 text-white sm:p-6">
-          <header className="flex items-center justify-between gap-3 pb-4">
-            <button
-              type="button"
-              onClick={() => onPreviewSource(null)}
-              className="inline-flex h-10 items-center gap-2 border border-white/16 bg-white/6 px-4 text-xs font-medium"
-            >
-              <ArrowLeft size={15} /> Presenter notes
-            </button>
-            <p className="min-w-0 truncate text-center text-xs text-white/62">
-              {String(previewSource.page).padStart(2, "0")} / {String(sources.length).padStart(2, "0")} · {previewSource.title}
-            </p>
-            <button
-              type="button"
-              onClick={() => onPreviewSource(null)}
-              className="grid size-10 shrink-0 place-items-center border border-white/16 bg-white/6"
-              aria-label="Close source preview"
-            >
-              <X size={18} />
-            </button>
-          </header>
-          <div className="relative min-h-0 flex-1 overflow-hidden bg-[#111]">
-            <Image
-              src={previewSource.full}
-              alt={`Source page ${previewSource.page}: ${previewSource.title}`}
-              fill
-              priority
-              sizes="100vw"
-              className="object-contain"
-            />
-            <button
-              type="button"
-              onClick={() =>
-                onPreviewSource(sources[(previewIndex - 1 + sources.length) % sources.length].id)
-              }
-              className="absolute left-3 top-1/2 grid size-11 -translate-y-1/2 place-items-center bg-black/74 backdrop-blur-xl sm:left-5"
-              aria-label="Previous source page"
-            >
-              <ArrowLeft size={18} />
-            </button>
-            <button
-              type="button"
-              onClick={() => onPreviewSource(sources[(previewIndex + 1) % sources.length].id)}
-              className="absolute right-3 top-1/2 grid size-11 -translate-y-1/2 place-items-center bg-black/74 backdrop-blur-xl sm:right-5"
-              aria-label="Next source page"
-            >
-              <ArrowRight size={18} />
-            </button>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

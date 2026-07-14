@@ -13,7 +13,6 @@ import {
   chapterFirstSceneIndex,
   magnoliaChapters,
   magnoliaScenes,
-  magnoliaSourceReferences,
 } from "@/data/presentation/magnolia-story";
 import { magnoliaDecisions, magnoliaHotspots } from "@/data/projects/magnolia";
 import type { Hotspot, MagnoliaChapterId } from "@/data/pursuits/types";
@@ -32,7 +31,6 @@ export function MagnoliaPresentationPlayer() {
   const [isMuted, setIsMuted] = useState(true);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [previewSourceId, setPreviewSourceId] = useState<string | null>(null);
   const [focusedHotspotId, setFocusedHotspotId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -87,7 +85,6 @@ export function MagnoliaPresentationPlayer() {
   }, [scheduleControlsHide]);
 
   const closeDrawer = useCallback(() => {
-    setPreviewSourceId(null);
     setFocusedHotspotId(null);
     setDrawerOpen(false);
     setControlsVisible(true);
@@ -98,7 +95,6 @@ export function MagnoliaPresentationPlayer() {
       if (isTransitioning) return;
       const normalized = (next + magnoliaScenes.length) % magnoliaScenes.length;
       const scope = stageRef.current;
-      setPreviewSourceId(null);
       setFocusedHotspotId(null);
       setDrawerOpen(false);
 
@@ -117,15 +113,6 @@ export function MagnoliaPresentationPlayer() {
     [curtains, isTransitioning],
   );
 
-  const advancePlayback = useCallback(() => {
-    if (index >= magnoliaScenes.length - 1) {
-      setIsPlaying(false);
-      setControlsVisible(true);
-      return;
-    }
-    goTo(index + 1);
-  }, [goTo, index]);
-
   const requestFullscreen = useCallback(async () => {
     try {
       if (!document.fullscreenElement) await stageRef.current?.requestFullscreen?.();
@@ -136,18 +123,12 @@ export function MagnoliaPresentationPlayer() {
   }, []);
 
   const startPlayback = useCallback(async () => {
+    if (!current.video) return;
     setIsPlaying(true);
     setControlsVisible(true);
     scheduleControlsHide();
-    if (!document.fullscreenElement) {
-      try {
-        await stageRef.current?.requestFullscreen?.();
-      } catch {
-        // Autoplay still works when fullscreen is blocked by the browser.
-      }
-    }
     await videoRef.current?.play().catch(() => undefined);
-  }, [scheduleControlsHide]);
+  }, [current.video, scheduleControlsHide]);
 
   const togglePlayback = useCallback(() => {
     if (isPlaying) {
@@ -164,7 +145,6 @@ export function MagnoliaPresentationPlayer() {
     setIsPlaying(false);
     videoRef.current?.pause();
     setFocusedHotspotId(hotspot?.id ?? null);
-    setPreviewSourceId(null);
     setDrawerOpen(true);
     setControlsVisible(true);
     clearControlsTimer();
@@ -182,15 +162,6 @@ export function MagnoliaPresentationPlayer() {
     scheduleControlsHide();
     return clearControlsTimer;
   }, [clearControlsTimer, scheduleControlsHide]);
-
-  useEffect(() => {
-    if (!isPlaying || current.video) return;
-    const timer = window.setTimeout(
-      advancePlayback,
-      current.durationMs ?? 9000,
-    );
-    return () => window.clearTimeout(timer);
-  }, [advancePlayback, current.durationMs, current.video, isPlaying]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -252,10 +223,12 @@ export function MagnoliaPresentationPlayer() {
           videoRef={videoRef}
           isMuted={isMuted}
           hideNarrative={hideNarrative}
-          sourceReferences={magnoliaSourceReferences}
           hotspots={sceneHotspots}
           onHotspotOpen={openDrawer}
-          onVideoEnded={advancePlayback}
+          onVideoEnded={() => {
+            setIsPlaying(false);
+            setControlsVisible(true);
+          }}
         />
 
         <header
@@ -300,6 +273,7 @@ export function MagnoliaPresentationPlayer() {
             currentScene={index + 1}
             sceneCount={magnoliaScenes.length}
             isPlaying={isPlaying}
+            canPlayVideo={Boolean(current.video)}
             isMuted={isMuted}
             isFullscreen={isFullscreen}
             disabled={isTransitioning}
@@ -331,9 +305,6 @@ export function MagnoliaPresentationPlayer() {
           chapter={currentChapter}
           products={drawerProducts}
           decisions={drawerDecisions}
-          sources={magnoliaSourceReferences}
-          previewSourceId={previewSourceId}
-          onPreviewSource={setPreviewSourceId}
           onClose={closeDrawer}
         />
       </div>

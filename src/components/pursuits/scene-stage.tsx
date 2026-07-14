@@ -1,10 +1,6 @@
 import Image from "next/image";
 import type { RefObject } from "react";
-import type {
-  Hotspot,
-  PursuitScene,
-  SourceReference,
-} from "@/data/pursuits/types";
+import type { Hotspot, PursuitScene } from "@/data/pursuits/types";
 import { HotspotLayer } from "@/components/pursuits/hotspot-layer";
 
 type SceneStageProps = {
@@ -13,7 +9,6 @@ type SceneStageProps = {
   videoRef: RefObject<HTMLVideoElement | null>;
   isMuted: boolean;
   hideNarrative: boolean;
-  sourceReferences: SourceReference[];
   hotspots: Hotspot[];
   onHotspotOpen: (hotspot: Hotspot) => void;
   onVideoEnded: () => void;
@@ -25,18 +20,10 @@ export function SceneStage({
   videoRef,
   isMuted,
   hideNarrative,
-  sourceReferences,
   hotspots,
   onHotspotOpen,
   onVideoEnded,
 }: SceneStageProps) {
-  const evidence = scene.evidence
-    .map((item) => ({
-      ...item,
-      source: sourceReferences.find((source) => source.id === item.sourceId),
-    }))
-    .filter((item) => item.source);
-
   return (
     <>
       <div className="pointer-events-none absolute inset-0">
@@ -83,18 +70,14 @@ export function SceneStage({
           hideNarrative
             ? "pointer-events-none translate-y-3 opacity-0"
             : "translate-y-0 opacity-100"
-        } ${evidence.length ? "lg:grid-cols-[minmax(0,0.82fr)_minmax(420px,1.18fr)]" : "lg:grid-cols-[1fr_320px]"}`}
+        } lg:grid-cols-[minmax(0,1fr)_minmax(290px,0.48fr)]`}
       >
         <div className="min-w-0">
           <p className="font-mono text-[10px] uppercase text-white/58 sm:text-xs">
             {scene.eyebrow}
           </p>
           <h1
-            className={`mt-3 max-w-6xl text-balance font-semibold leading-[0.9] tracking-normal ${
-              evidence.length
-                ? "text-[clamp(2.6rem,5.1vw,6.25rem)]"
-                : "text-[clamp(3.35rem,7.6vw,9.5rem)]"
-            }`}
+            className="mt-3 max-w-6xl text-balance text-[clamp(3.35rem,7.1vw,8.75rem)] font-semibold leading-[0.9] tracking-normal"
           >
             {scene.title}
           </h1>
@@ -118,51 +101,25 @@ export function SceneStage({
           </div>
         </div>
 
-        {evidence.length ? (
-          <aside
-            className={`hidden gap-2 lg:grid ${
-              evidence.length === 1
-                ? "grid-cols-1"
-                : evidence.length === 2
-                  ? "grid-cols-2"
-                  : "grid-cols-3"
-            }`}
-            aria-label="Project technical evidence"
-          >
-            {evidence.map((item) => (
-              <figure
-                key={`${scene.id}-${item.sourceId}`}
-                className="overflow-hidden border border-white/16 bg-white p-1.5 shadow-2xl shadow-black/30"
-              >
-                <div className="relative aspect-video overflow-hidden bg-[#f3f3f1]">
-                  <Image
-                    src={item.source!.full}
-                    alt={item.label}
-                    fill
-                    sizes="(min-width: 1280px) 30vw, 40vw"
-                    className="object-contain"
-                  />
-                </div>
-                <figcaption className="px-1 pb-0.5 pt-2 font-mono text-[9px] uppercase text-black/52">
-                  {item.label}
-                </figcaption>
-              </figure>
+        <aside
+          className="hidden border-l border-white/18 pl-7 lg:block"
+          aria-label="Current project record"
+        >
+          <p className="font-mono text-[10px] uppercase text-white/42">
+            Connected project record
+          </p>
+          <p className="mt-4 text-xl font-medium leading-7 text-white">
+            {scene.presenterNote.lead}
+          </p>
+          <ul className="mt-6 space-y-3 border-t border-white/16 pt-5 text-sm leading-6 text-white/66">
+            {scene.presenterNote.talkingPoints.map((point) => (
+              <li key={point} className="grid grid-cols-[8px_1fr] gap-3">
+                <span className="mt-[9px] size-1.5 bg-white/70" aria-hidden="true" />
+                <span>{point}</span>
+              </li>
             ))}
-          </aside>
-        ) : (
-          <aside className="hidden border-l border-white/18 pl-6 lg:block">
-            <p className="font-mono text-[10px] uppercase text-white/42">Project team</p>
-            <p className="mt-3 text-sm leading-6 text-white/76">
-              Highland Resources
-              <br />
-              Pickard Chilton
-              <br />
-              Cooper Carry
-              <br />
-              1CG + ES
-            </p>
-          </aside>
-        )}
+          </ul>
+        </aside>
       </section>
     </>
   );
