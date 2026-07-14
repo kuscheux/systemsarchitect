@@ -26,6 +26,21 @@ export type PresenterNote = {
   talkingPoints: string[];
 };
 
+export type TechnicalDetail = {
+  id: string;
+  title: string;
+  sheet: string;
+  detail: string;
+  image: string;
+  alt: string;
+  callouts: string[];
+};
+
+export type FloorSequenceStep = {
+  floor: string;
+  duration: string;
+};
+
 export type VendorProduct = {
   id: string;
   vendor: VendorId;
@@ -90,6 +105,9 @@ export type PursuitScene = {
   hotspotIds: string[];
   presenterNote: PresenterNote;
   decisionIds?: string[];
+  technicalLayout?: "overview" | "single" | "triptych";
+  technicalDetails?: TechnicalDetail[];
+  floorSequence?: FloorSequenceStep[];
 };
 
 export type PursuitProject = {

@@ -2,6 +2,7 @@ import type {
   PursuitChapter,
   PursuitScene,
   SourceReference,
+  TechnicalDetail,
 } from "@/data/pursuits/types";
 
 const sourceTitles = [
@@ -42,6 +43,48 @@ export const magnoliaSourceReferences: SourceReference[] = sourceTitles.map(
     full: pagePath("full", index + 1),
   }),
 );
+
+const slabEdgeDetails: TechnicalDetail[] = [
+  {
+    id: "glass-spandrel",
+    title: "Glass spandrel at slab edge",
+    sheet: "A6.01",
+    detail: "Detail 1",
+    image: "/images/magnolia/tko/details/glass-spandrel.webp",
+    alt: "Architectural section showing the glass spandrel condition at the Level 6 office slab edge",
+    callouts: [
+      "GL-2 Pattern forms the office spandrel condition at the slab edge.",
+      "AL-1 exterior mullions continue above and below the floor line.",
+      "AL-6 wood-match fin continues below the spandrel zone.",
+    ],
+  },
+  {
+    id: "metal-panel-spandrel",
+    title: "Metal-panel spandrel at slab edge",
+    sheet: "A6.01",
+    detail: "Detail 2",
+    image: "/images/magnolia/tko/details/metal-panel-spandrel.webp",
+    alt: "Architectural section showing the metal-panel spandrel condition at the Level 6 office slab edge",
+    callouts: [
+      "The metal-panel spandrel is explicitly assigned to Glass Sub Scope.",
+      "The section aligns the spandrel assembly to the Level 6 office floor line.",
+      "AL-1 mullions and the AL-6 fin remain coordinated through the condition.",
+    ],
+  },
+  {
+    id: "garage-spandrel",
+    title: "Garage metal-panel spandrel",
+    sheet: "A6.01",
+    detail: "Detail 3",
+    image: "/images/magnolia/tko/details/garage-spandrel.webp",
+    alt: "Architectural section showing the garage metal-panel spandrel at the Level 4 parking slab edge",
+    callouts: [
+      "The Level 4 parking spandrel is explicitly assigned to Glass Sub Scope.",
+      "AL-1 major vertical mullions frame the garage condition.",
+      "The adjacent crash barrier and slab edge are shown as coordination interfaces.",
+    ],
+  },
+];
 
 export const magnoliaChapters: PursuitChapter[] = [
   {
@@ -210,9 +253,9 @@ export const magnoliaScenes: PursuitScene[] = [
   {
     id: "glazing-scope",
     chapterId: "glazing",
-    eyebrow: "05 / Division 8",
-    title: "Six glass conditions. One envelope.",
-    body: "The architectural material schedule defines vision, frit-pattern, spandrel, and Level 1 impact glazing as coordinated envelope conditions.",
+    eyebrow: "05 / Glazing Scope / RFP Set",
+    title: "The glass scope is in the details.",
+    body: "Pickard Chilton sheet A6.01 assigns the office and garage slab-edge spandrel conditions to Glass Sub Scope. The material schedule then controls the glass, coating, frit, laminate, backpan, and finish at each condition.",
     image: "/images/magnolia/tko/materials.webp",
     durationMs: 9000,
     metrics: [
@@ -224,25 +267,27 @@ export const magnoliaScenes: PursuitScene[] = [
     sourcePageIds: [sourceId(12)],
     hotspotIds: ["curtain-wall", "entrances"],
     presenterNote: {
-      lead: "The real RFP material schedule is now structured into the project record.",
+      lead: "The RFP set explicitly identifies the slab-edge spandrel conditions inside Glass Sub Scope.",
       talkingPoints: [
-        "GL-1 uses a 3/8-inch heat-strengthened outer lite, VRE-4725 coating, black spacer, and laminated interior lite.",
-        "GL-4 and GL-5 use VRE-85 with a 0.090-inch PVB interlayer for large-missile impact conditions at Level 1.",
+        "A6.01 Details 1, 2, and 3 cover the office glass spandrel, office metal-panel spandrel, and garage metal-panel spandrel.",
+        "A0.02 schedules GL-1 through GL-5, including patterned vision, spandrel, small-missile, and Level 1 large-missile conditions.",
       ],
     },
+    technicalLayout: "overview",
+    technicalDetails: slabEdgeDetails,
   },
   {
     id: "gw-7000-system",
     chapterId: "glazing",
-    eyebrow: "06 / Unitized Curtain Wall",
-    title: "GW-7000, resolved for scale.",
-    body: "Impact-rated, thermally broken unitized curtain wall supports large commercial openings and repeatable floor-by-floor installation.",
-    image: "/images/magnolia/04-north-elevation.png",
+    eyebrow: "06 / A6.01 / Detail 1",
+    title: "Office slab edge, resolved.",
+    body: "The office section ties the GL-2 patterned spandrel, AL-1 exterior mullions, AL-6 fin, interior perimeter line, and Level 6 slab edge into one buildable curtain-wall condition.",
+    image: "/images/magnolia/tko/details/glass-spandrel.webp",
     durationMs: 9400,
     metrics: [
-      { label: "Frame", value: "7 in." },
-      { label: "Design Load", value: "+100 / -140 psf" },
-      { label: "Acoustics", value: "STC 43" },
+      { label: "Spandrel", value: "GL-2 Pattern" },
+      { label: "Exterior Mullion", value: "AL-1" },
+      { label: "Architectural Fin", value: "AL-6" },
     ],
     evidence: [
       { sourceId: sourceId(13), label: "GW-7000 system" },
@@ -251,12 +296,14 @@ export const magnoliaScenes: PursuitScene[] = [
     sourcePageIds: [sourceId(13), sourceId(15)],
     hotspotIds: ["curtain-wall"],
     presenterNote: {
-      lead: "Connect system performance to repeatable installation, not isolated ratings.",
+      lead: "This is the actual office slab-edge condition marked Glass Sub Scope in the Curtain Wall RFP.",
       talkingPoints: [
-        "Preassembled and preglazed unitized panels reduce field variability.",
-        "Impact, water, thermal, and acoustic values remain connected to the selected system.",
+        "The GL-2 Pattern spandrel crosses the floor line while the vision assembly continues above and below.",
+        "The interior perimeter condition is identified as tenant work, making the trade interface visible.",
       ],
     },
+    technicalLayout: "single",
+    technicalDetails: [slabEdgeDetails[0]],
   },
   {
     id: "entrance-systems",
@@ -288,9 +335,9 @@ export const magnoliaScenes: PursuitScene[] = [
   {
     id: "bullnose-clarity",
     chapterId: "glazing",
-    eyebrow: "08 / Architectural Detail",
-    title: "Clarity, frit, and impact are specified.",
-    body: "Vision, patterned vision, spandrel, and garage glazing use distinct coating, frit, laminate, and impact makeups documented in the RFP set.",
+    eyebrow: "08 / A6.01 / Spandrel Comparison",
+    title: "Three slab-edge conditions. One accountable scope.",
+    body: "The RFP resolves office glass spandrel, office metal-panel spandrel, and garage metal-panel spandrel as three distinct conditions within the glazing package.",
     image: "/images/magnolia/tko/enclosure-details-01.webp",
     durationMs: 9400,
     metrics: [
@@ -305,12 +352,14 @@ export const magnoliaScenes: PursuitScene[] = [
     sourcePageIds: [sourceId(16), sourceId(17)],
     hotspotIds: ["curtain-wall"],
     presenterNote: {
-      lead: "Each glass type is tied to a documented location and performance condition.",
+      lead: "Read the three real A6.01 sections side by side before discussing product selections.",
       talkingPoints: [
-        "GL-2 and GL-3 use ceramic frit and painted backpans at garage spandrel conditions.",
-        "Alternate 1 replaces the clear outer lite with mid-iron glass across all glass types.",
+        "The office details share a 2-foot-6-inch spandrel zone at the floor line.",
+        "The garage detail adds the parking slab and crash-barrier interface while retaining the glass subcontractor assignment.",
       ],
     },
+    technicalLayout: "triptych",
+    technicalDetails: slabEdgeDetails,
   },
   {
     id: "cladding-package",
@@ -565,14 +614,14 @@ export const magnoliaScenes: PursuitScene[] = [
     id: "level-sequence",
     chapterId: "installation",
     eyebrow: "19 / Field Execution",
-    title: "Six levels. One repeatable sequence.",
-    body: "Layout, clip installation, unit installation, cladding interfaces, and just-in-time delivery repeat level by level.",
-    image: "/images/magnolia/tko/elevations-east-west.webp",
+    title: "The first floor sets the rhythm.",
+    body: "Level 1 establishes the field sequence over 25 days. The same controlled logic then moves through Levels 2–6 at 15 days per floor.",
+    image: "/images/magnolia/magnolia-rfp-rendering.webp",
     durationMs: 9400,
     metrics: [
       { label: "Floors", value: "Levels 1–6" },
-      { label: "Method", value: "Layout + Clips + Units" },
-      { label: "Delivery", value: "Just in Time" },
+      { label: "Level 1", value: "25 Days" },
+      { label: "Levels 2–6", value: "15 Days Each" },
     ],
     evidence: [{ sourceId: sourceId(6), label: "Level 1–6 installation sequence" }],
     sourcePageIds: [sourceId(6), sourceId(7), sourceId(12)],
@@ -580,10 +629,18 @@ export const magnoliaScenes: PursuitScene[] = [
     presenterNote: {
       lead: "Connect the schedule to the field method.",
       talkingPoints: [
-        "Each level repeats the same controlled installation logic.",
-        "Division 7 and Division 8 interfaces are sequenced together.",
+        "Level 1 carries the initial 25-day setup and coordination cycle.",
+        "The remaining five floors repeat at 15 days each for a 100-day six-level sequence.",
       ],
     },
+    floorSequence: [
+      { floor: "Level 1", duration: "25 days" },
+      { floor: "Level 2", duration: "15 days" },
+      { floor: "Level 3", duration: "15 days" },
+      { floor: "Level 4", duration: "15 days" },
+      { floor: "Level 5", duration: "15 days" },
+      { floor: "Level 6", duration: "15 days" },
+    ],
   },
   {
     id: "quality-emr",

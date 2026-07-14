@@ -2,6 +2,8 @@ import Image from "next/image";
 import type { RefObject } from "react";
 import type { Hotspot, PursuitScene } from "@/data/pursuits/types";
 import { HotspotLayer } from "@/components/pursuits/hotspot-layer";
+import { TechnicalSceneStage } from "@/components/pursuits/technical-scene-stage";
+import { FloorSequenceStage } from "@/components/pursuits/floor-sequence-stage";
 
 type SceneStageProps = {
   scene: PursuitScene;
@@ -24,6 +26,14 @@ export function SceneStage({
   onHotspotOpen,
   onVideoEnded,
 }: SceneStageProps) {
+  if (scene.floorSequence?.length) {
+    return <FloorSequenceStage scene={scene} />;
+  }
+
+  if (scene.technicalDetails?.length) {
+    return <TechnicalSceneStage scene={scene} />;
+  }
+
   return (
     <>
       <div className="pointer-events-none absolute inset-0">
