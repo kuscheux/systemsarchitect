@@ -2,11 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { blinds } from "motion-plus/curtains";
+import { useCurtains } from "motion-plus/react";
 import {
   ArrowLeft,
   ArrowRight,
   Download,
   ExternalLink,
+  LayoutGrid,
   Maximize2,
   MoreHorizontal,
   Pause,
@@ -34,6 +37,46 @@ type Slide = {
   details?: DetailImage[];
   durationMs?: number;
 };
+
+type DeckSlide = {
+  title: string;
+  thumbnail: string;
+  full: string;
+};
+
+const deckSlideTitles = [
+  "Magnolia Landing",
+  "Brand anthem",
+  "Stronger Together",
+  "Factory to field",
+  "Project overview",
+  "Installation schedule",
+  "Architectural cladding",
+  "6-inch V-Plank woodgrain",
+  "Mosaic colors and finishes",
+  "Charleston Green ACM",
+  "Garage screening",
+  "Architectural glazing",
+  "GW-7000",
+  "Commercial entrance systems",
+  "Curtain wall systems",
+  "GW-7000 bullnose detail",
+  "Lower-iron glass",
+  "EMR ratings",
+  "Contact 1CG",
+  "Waterfront Hotel",
+  "22 WestEdge",
+  "Morrison Yard",
+] as const;
+
+const deckSlides: DeckSlide[] = deckSlideTitles.map((title, index) => {
+  const number = String(index + 1).padStart(2, "0");
+  return {
+    title,
+    thumbnail: `/images/magnolia/deck/original/slide-${number}.jpg`,
+    full: `/images/magnolia/deck/full/slide-${number}.jpg`,
+  };
+});
 
 const slides: Slide[] = [
   {
@@ -139,7 +182,22 @@ const slides: Slide[] = [
     ],
   },
   {
-    eyebrow: "07 / Relevant Work",
+    eyebrow: "07 / Why 1CG",
+    title: "Charleston proof. One accountable team.",
+    body: "Schedule certainty, coastal performance, documented safety, and comparable local execution come together under one coordinated envelope partner.",
+    image: "/images/magnolia/01-southeast-oblique.png",
+    stats: [
+      { label: "Schedule", value: "Floor-by-Floor" },
+      { label: "Safety", value: "0.78 EMR" },
+      { label: "Local Proof", value: "Charleston Portfolio" },
+    ],
+    details: [
+      { src: "/images/magnolia/deck/page-18.webp", label: "Documented safety" },
+      { src: "/images/magnolia/deck/page-21.webp", label: "Comparable Charleston execution" },
+    ],
+  },
+  {
+    eyebrow: "08 / Relevant Work",
     title: "The right proof is already in the room.",
     body: "Comparable hospitality, office, and mixed-use work gives stakeholders immediate context for scale, systems, and execution.",
     image: "/images/magnolia/02-east-elevation.png",
@@ -155,7 +213,7 @@ const slides: Slide[] = [
     ],
   },
   {
-    eyebrow: "Magnolia Landing / Project Pin",
+    eyebrow: "09 / Magnolia Landing Project Pin",
     title: "Ready for the room.",
     body: "One link. Fullscreen playback. The technical source remains available when the conversation needs it.",
     image: "/images/magnolia/06-southwest-elevation.png",
@@ -171,6 +229,7 @@ const slides: Slide[] = [
 const pad = (value: number) => String(value).padStart(2, "0");
 
 export function MagnoliaPresentationPlayer() {
+  const [curtains, isTransitioning] = useCurtains();
   const stageRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -180,15 +239,30 @@ export function MagnoliaPresentationPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDeckOpen, setIsDeckOpen] = useState(false);
+  const [deckPreviewIndex, setDeckPreviewIndex] = useState<number | null>(null);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
   const [uploadedVideoUrl, setUploadedVideoUrl] = useState<string | null>(null);
   const current = slides[index];
   const backgroundVideo = uploadedVideoUrl ?? current.video;
+  const hideNarrative = isPlaying && Boolean(backgroundVideo);
 
   const goTo = useCallback((next: number) => {
-    setIndex((next + slides.length) % slides.length);
-  }, []);
+    if (isTransitioning) return;
+    const normalized = (next + slides.length) % slides.length;
+    const scope = stageRef.current;
+    if (!scope) {
+      setIndex(normalized);
+      return;
+    }
+    const slatSize = Math.max(54, Math.min(96, Math.round(scope.clientHeight / 8)));
+    void curtains(() => setIndex(normalized), {
+      effect: blinds({ direction: "row", directionMode: "normal", size: slatSize }),
+      transition: [{ duration: 0.34 }, { duration: 0.42 }],
+      scope,
+    });
+  }, [curtains, isTransitioning]);
 
   const revealControls = useCallback(() => {
     setControlsVisible(true);
@@ -203,6 +277,8 @@ export function MagnoliaPresentationPlayer() {
     setIsPlaying(false);
     setControlsVisible(true);
     setIsMenuOpen(false);
+    setIsDeckOpen(false);
+    setDeckPreviewIndex(null);
     if (document.fullscreenElement) void document.exitFullscreen();
   }, []);
 
@@ -222,11 +298,9 @@ export function MagnoliaPresentationPlayer() {
 
   useEffect(() => {
     if (!isPlaying) return;
-    const timer = window.setTimeout(() => {
-      setIndex((value) => (value + 1) % slides.length);
-    }, current.durationMs ?? 7600);
+    const timer = window.setTimeout(() => goTo(index + 1), current.durationMs ?? 7600);
     return () => window.clearTimeout(timer);
-  }, [current.durationMs, index, isPlaying]);
+  }, [current.durationMs, goTo, index, isPlaying]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -238,6 +312,10 @@ export function MagnoliaPresentationPlayer() {
         else void startPlayback();
       }
       if (event.key === "Escape") setIsMenuOpen(false);
+      if (event.key === "Escape") {
+        setIsDeckOpen(false);
+        setDeckPreviewIndex(null);
+      }
       revealControls();
     };
     window.addEventListener("keydown", onKeyDown);
@@ -300,7 +378,13 @@ export function MagnoliaPresentationPlayer() {
               className="magnolia-scene-image object-cover"
             />
           )}
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.9),rgba(0,0,0,0.44)_48%,rgba(0,0,0,0.18)),linear-gradient(0deg,rgba(0,0,0,0.86),transparent_58%)]" />
+          <div
+            className={`absolute inset-0 transition-all duration-700 ${
+              hideNarrative
+                ? "bg-black/10"
+                : "bg-[linear-gradient(90deg,rgba(0,0,0,0.9),rgba(0,0,0,0.44)_48%,rgba(0,0,0,0.18)),linear-gradient(0deg,rgba(0,0,0,0.86),transparent_58%)]"
+            }`}
+          />
         </div>
 
         <header
@@ -357,6 +441,19 @@ export function MagnoliaPresentationPlayer() {
                     Preview Source Video
                     <Upload size={16} />
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsPlaying(false);
+                      setIsMenuOpen(false);
+                      setDeckPreviewIndex(null);
+                      setIsDeckOpen(true);
+                    }}
+                    className="flex w-full items-center justify-between px-3 py-3 text-left text-white/82 hover:bg-white/10"
+                  >
+                    Preview Source Deck
+                    <LayoutGrid size={16} />
+                  </button>
                   <a
                     href="/documents/magnolia-landing-deck.pdf"
                     target="_blank"
@@ -386,7 +483,10 @@ export function MagnoliaPresentationPlayer() {
 
         <section
           key={index}
-          className={`magnolia-scene relative z-10 mt-auto grid gap-6 px-5 pb-4 sm:px-8 sm:pb-6 lg:items-end lg:gap-10 lg:px-12 ${current.details ? "lg:grid-cols-[0.82fr_1.18fr]" : "lg:grid-cols-[1fr_360px]"}`}
+          aria-hidden={hideNarrative}
+          className={`magnolia-scene relative z-10 mt-auto grid gap-6 px-5 pb-4 transition-all duration-700 sm:px-8 sm:pb-6 lg:items-end lg:gap-10 lg:px-12 ${
+            hideNarrative ? "pointer-events-none translate-y-3 opacity-0" : "translate-y-0 opacity-100"
+          } ${current.details ? "lg:grid-cols-[0.82fr_1.18fr]" : "lg:grid-cols-[1fr_360px]"}`}
         >
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/58 sm:text-xs">
@@ -452,6 +552,7 @@ export function MagnoliaPresentationPlayer() {
           <button
             type="button"
             onClick={() => goTo(index - 1)}
+            disabled={isTransitioning}
             className="grid size-10 place-items-center rounded-full border border-white/18 bg-black/24 text-white backdrop-blur-xl sm:size-11"
             aria-label="Previous scene"
           >
@@ -468,10 +569,24 @@ export function MagnoliaPresentationPlayer() {
           <button
             type="button"
             onClick={() => goTo(index + 1)}
+            disabled={isTransitioning}
             className="grid size-10 place-items-center rounded-full border border-white/18 bg-black/24 text-white backdrop-blur-xl sm:size-11"
             aria-label="Next scene"
           >
             <ArrowRight size={17} />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setIsPlaying(false);
+              setDeckPreviewIndex(null);
+              setIsDeckOpen(true);
+            }}
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-white/18 bg-black/24 px-4 text-xs font-medium text-white backdrop-blur-xl sm:h-11"
+          >
+            <LayoutGrid size={15} />
+            <span className="hidden sm:inline">Source deck</span>
+            <span className="font-mono text-[9px] text-white/48">22</span>
           </button>
           <div className="ml-2 hidden h-px flex-1 bg-white/16 sm:block">
             <div
@@ -501,7 +616,115 @@ export function MagnoliaPresentationPlayer() {
           </button>
         </footer>
 
-        {!isPlaying && index === 0 ? (
+        {isDeckOpen ? (
+          <div className="absolute inset-0 z-[60] overflow-y-auto bg-[#090909]/98 text-white backdrop-blur-xl">
+            {deckPreviewIndex == null ? (
+              <div className="mx-auto max-w-[1760px] p-4 sm:p-7 lg:p-10">
+                <div className="sticky top-0 z-10 mb-6 flex items-center justify-between border-b border-white/12 bg-[#090909]/94 pb-5 pt-1 backdrop-blur-xl">
+                  <div>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/42">
+                      Magnolia Landing / Source Deck
+                    </p>
+                    <h2 className="mt-2 text-2xl font-semibold tracking-normal sm:text-4xl">
+                      22 original slides
+                    </h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsDeckOpen(false)}
+                    className="grid size-11 place-items-center rounded-full border border-white/16 bg-white/6 text-white"
+                    aria-label="Close source deck"
+                  >
+                    <X size={19} />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                  {deckSlides.map((slide, slideIndex) => (
+                    <button
+                      key={slide.thumbnail}
+                      type="button"
+                      onClick={() => setDeckPreviewIndex(slideIndex)}
+                      className="group overflow-hidden border border-white/12 bg-white/[0.035] text-left transition hover:-translate-y-0.5 hover:border-white/32"
+                    >
+                      <div className="relative aspect-video overflow-hidden bg-white">
+                        <Image
+                          src={slide.thumbnail}
+                          alt={`Slide ${slideIndex + 1}: ${slide.title}`}
+                          fill
+                          sizes="(min-width: 1280px) 20vw, (min-width: 768px) 25vw, 50vw"
+                          className="object-cover transition duration-500 group-hover:scale-[1.018]"
+                        />
+                      </div>
+                      <div className="flex items-start gap-3 p-3">
+                        <span className="font-mono text-[9px] tracking-[0.14em] text-white/36">
+                          {pad(slideIndex + 1)}
+                        </span>
+                        <span className="text-xs font-medium leading-4 text-white/76 sm:text-sm">
+                          {slide.title}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex min-h-full flex-col p-3 sm:p-6">
+                <div className="flex items-center justify-between gap-3 pb-4">
+                  <button
+                    type="button"
+                    onClick={() => setDeckPreviewIndex(null)}
+                    className="inline-flex h-10 items-center gap-2 rounded-full border border-white/16 bg-white/6 px-4 text-xs font-medium text-white"
+                  >
+                    <ArrowLeft size={15} /> All slides
+                  </button>
+                  <p className="min-w-0 truncate text-center text-xs font-medium text-white/68 sm:text-sm">
+                    {pad(deckPreviewIndex + 1)} / {pad(deckSlides.length)} · {deckSlides[deckPreviewIndex].title}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDeckPreviewIndex(null);
+                      setIsDeckOpen(false);
+                    }}
+                    className="grid size-10 shrink-0 place-items-center rounded-full border border-white/16 bg-white/6 text-white"
+                    aria-label="Close source slide"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+                <div className="relative min-h-0 flex-1 overflow-hidden bg-black">
+                  <Image
+                    key={deckSlides[deckPreviewIndex].full}
+                    src={deckSlides[deckPreviewIndex].full}
+                    alt={`Slide ${deckPreviewIndex + 1}: ${deckSlides[deckPreviewIndex].title}`}
+                    fill
+                    priority
+                    sizes="100vw"
+                    className="object-contain"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setDeckPreviewIndex((deckPreviewIndex - 1 + deckSlides.length) % deckSlides.length)}
+                    className="absolute left-3 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-black/70 text-white backdrop-blur-xl sm:left-5"
+                    aria-label="Previous source slide"
+                  >
+                    <ArrowLeft size={18} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeckPreviewIndex((deckPreviewIndex + 1) % deckSlides.length)}
+                    className="absolute right-3 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-black/70 text-white backdrop-blur-xl sm:right-5"
+                    aria-label="Next source slide"
+                  >
+                    <ArrowRight size={18} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : null}
+
+        {!isPlaying && !isDeckOpen && index === 0 ? (
           <button
             type="button"
             onClick={startPlayback}
