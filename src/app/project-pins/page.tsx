@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Expand, MapPin, Upload } from "lucide-react";
 import { PageShell } from "@/components/site-shell";
-import { requireEmployeePortalUser } from "@/lib/portal/auth";
 
 export const metadata: Metadata = {
   title: "Project Pins | 1CG",
@@ -26,14 +25,13 @@ const cards = [
   },
 ];
 
-export default async function ProjectPinsPage() {
-  await requireEmployeePortalUser("/project-pins");
+export default function ProjectPinsPage() {
   return (
     <PageShell>
       <main className="bg-background text-foreground">
         <section className="relative min-h-screen overflow-hidden bg-black text-white">
           <video
-            className="absolute inset-0 h-full w-full object-cover opacity-60 grayscale"
+            className="absolute inset-0 h-full w-full object-cover opacity-68"
             src="/videos/magnolia/magnolia-timelapse.mp4"
             poster="/videos/magnolia/magnolia-timelapse-cover.jpg"
             autoPlay
@@ -60,10 +58,10 @@ export default async function ProjectPinsPage() {
                   Open Magnolia <ArrowRight size={16} />
                 </Link>
                 <Link
-                  href="/#locations"
+                  href="/projects"
                   className="inline-flex items-center gap-2 rounded-full border border-white/24 px-5 py-3 text-sm font-medium text-white"
                 >
-                  View Map <MapPin size={16} />
+                  Browse Projects <MapPin size={16} />
                 </Link>
               </div>
             </div>
@@ -87,14 +85,13 @@ export default async function ProjectPinsPage() {
         <section className="px-5 pb-24 sm:px-6 md:px-12 lg:px-20">
           <div className="mx-auto grid max-w-[1500px] overflow-hidden border border-border bg-[#f2f2ef] lg:grid-cols-[0.9fr_1.1fr]">
             <div className="p-8 md:p-12">
-              <p className="public-eyebrow">Media Pipeline</p>
+              <p className="public-eyebrow">Presentation System</p>
               <h2 className="mt-5 max-w-2xl text-[clamp(3.4rem,8vw,8rem)] font-semibold leading-[0.86] tracking-[-0.078em]">
                 Built for clean playback.
               </h2>
               <p className="mt-7 max-w-xl text-lg leading-8 text-muted">
-                Upload source video at any size, keep the original asset, and render stakeholder
-                presentations in a fixed 16:9 stage. The production pipeline is ready for 8K masters
-                once the render worker is connected.
+                Bring video, drawings, systems, schedule, and next steps into a focused 16:9
+                presentation built for stakeholder review in the room or through one shared link.
               </p>
               <Link
                 href="/start-project"
