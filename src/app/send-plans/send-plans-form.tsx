@@ -346,8 +346,8 @@ export function SendPlansForm({ signedInEmail }: { signedInEmail: string }) {
       </form>
 
       <aside className="border border-border bg-[#0b0d10] p-6 text-white lg:sticky lg:top-28 md:p-8">
-        <p className="font-mono text-xs uppercase tracking-[0.08em] text-white/48">1CG Preconstruction</p>
-        <h3 className="mt-5 text-4xl font-semibold leading-[0.94] tracking-[-0.05em]">
+        <p className="font-mono text-xs uppercase tracking-normal text-white/48">1CG Preconstruction</p>
+        <h3 className="mt-5 text-4xl font-semibold leading-[0.94] tracking-normal">
           One glazing partner. Every opening.
         </h3>
         <ul className="mt-8 grid gap-4 border-y border-white/12 py-6 text-sm text-white/72">
@@ -365,8 +365,8 @@ export function SendPlansForm({ signedInEmail }: { signedInEmail: string }) {
         </ul>
 
         <div className="mt-7">
-          <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-white/42">Talk first</p>
-          <a href="tel:+17042917711" className="mt-3 flex items-center gap-3 text-xl font-semibold tracking-[-0.035em]">
+          <p className="font-mono text-[10px] uppercase tracking-normal text-white/42">Talk first</p>
+          <a href="tel:+17042917711" className="mt-3 flex items-center gap-3 text-xl font-semibold tracking-normal">
             <Phone size={17} className="text-white/42" /> 704 291 7711
           </a>
           <a href="mailto:estimating@glass1st.net" className="mt-3 flex items-center gap-3 text-sm text-white/66 transition hover:text-white">

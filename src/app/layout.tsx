@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
 
@@ -14,8 +16,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased" data-scroll-behavior="smooth">
-      <body>{children}</body>
+    <html
+      lang="en"
+      className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
+      data-scroll-behavior="smooth"
+    >
+      <body className={GeistSans.className}>{children}</body>
     </html>
   );
 }
