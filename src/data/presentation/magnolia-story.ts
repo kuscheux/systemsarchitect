@@ -131,7 +131,7 @@ export const magnoliaScenes: PursuitScene[] = [
       lead: "Open with the project, not the product catalog.",
       talkingPoints: [
         "Magnolia Landing is being treated as one connected envelope record.",
-        "The presentation, source details, decisions, and delivery story stay together.",
+        "The presentation, decisions, systems, and delivery story stay together.",
       ],
     },
   },
@@ -155,7 +155,7 @@ export const magnoliaScenes: PursuitScene[] = [
       lead: "Frame the value as coordination across the full exterior package.",
       talkingPoints: [
         "The scope is organized by decisions and interfaces rather than isolated product sheets.",
-        "Every quantity and system remains traceable to the working deck.",
+        "Every quantity and system remains part of the connected project record.",
       ],
     },
   },
@@ -254,7 +254,7 @@ export const magnoliaScenes: PursuitScene[] = [
       lead: "Connect system performance to repeatable installation, not isolated ratings.",
       talkingPoints: [
         "Preassembled and preglazed unitized panels reduce field variability.",
-        "Impact, water, thermal, and acoustic values remain available in the evidence drawer.",
+        "Impact, water, thermal, and acoustic values remain connected to the selected system.",
       ],
     },
   },
@@ -484,7 +484,7 @@ export const magnoliaScenes: PursuitScene[] = [
       lead: "Connect finish selection to procurement and visual consistency.",
       talkingPoints: [
         "The palette is intentionally narrow for control across large quantities.",
-        "The drawer preserves rationale and original source pages for stakeholder review.",
+        "The project record preserves selection rationale for stakeholder review.",
       ],
     },
     decisionIds: ["acm-finish", "soffit-finish"],
@@ -557,7 +557,7 @@ export const magnoliaScenes: PursuitScene[] = [
       lead: "Make the schedule legible as a sequence of accountable decisions.",
       talkingPoints: [
         "Design assist and approvals protect procurement and floor start dates.",
-        "The Gantt remains available at full resolution from the evidence drawer.",
+        "Each milestone stays connected to its accountable phase and field sequence.",
       ],
     },
   },
@@ -604,7 +604,7 @@ export const magnoliaScenes: PursuitScene[] = [
     presenterNote: {
       lead: "Treat safety and quality records as project deliverables.",
       talkingPoints: [
-        "The deck documents a current 0.78 experience modification rate.",
+        "The current project record documents a 0.78 experience modification rate.",
         "QA/QC remains connected to the system and installation narrative.",
       ],
     },
@@ -658,7 +658,7 @@ export const magnoliaScenes: PursuitScene[] = [
       lead: "Close with work that proves the team has executed comparable conditions.",
       talkingPoints: [
         "The references cover hospitality, mixed-use, and office work in Charleston.",
-        "Each source page remains available for value, schedule, scope, and reference detail.",
+        "Each project is presented through market, scope, execution scale, and relevant conditions.",
       ],
     },
   },
