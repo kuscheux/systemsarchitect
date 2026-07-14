@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Magnolia Landing — Exterior Envelope Presentation · 1CG</title>
+  <meta name="description" content="Client-facing exterior envelope presentation for Magnolia Landing, Charleston SC — glazing, cladding, screening. One coordinated package by 1CG.">
+  <script>document.documentElement.dataset.theme = (function(){ try { return localStorage.getItem("magnolia.theme") || "dark"; } catch(e) { return "dark"; } })();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/deck.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230a0c0b'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='%23d9a441' font-family='monospace'>M</text></svg>">
+</head>
+<body>
+
+  <!-- chrome -->
+  <div id="progress"></div>
+  <header id="chrome-top">
+    <div class="brand">
+      <img class="logo1cg" src="../public/logo/1cg-line.svg" alt="1CG" onerror="this.style.display='none'">
+      <span class="div"></span>
+      <span class="pname">Magnolia Landing · Exterior Envelope</span>
+    </div>
+    <div class="top-actions">
+      <span class="chip"><span class="dot"></span>Design Assist</span>
+      <button class="chip" id="theme-btn" aria-label="Toggle light / dark mode">◐&nbsp; Light</button>
+      <button class="chip" id="ver-btn">v0.4 · History</button>
+      <button class="chip" id="edit-btn">✎&nbsp; Edit</button>
+      <button class="chip" id="print-btn">⎙&nbsp; Print / PDF</button>
+    </div>
+  </header>
+
+  <!-- deck (sections are built by js/components/slides.js) -->
+  <main id="deck" aria-label="Presentation"></main>
+
+  <!-- navigation -->
+  <nav id="dots" aria-label="Sections"></nav>
+  <div id="counter"></div>
+  <div id="hint"><span>Scroll</span><span class="arr">▾</span></div>
+  <div id="last-edited"></div>
+
+  <!-- material review modal -->
+  <div id="mat-modal" role="dialog" aria-modal="true"></div>
+
+  <!-- version history -->
+  <div id="ver-scrim"></div>
+  <aside id="ver-panel" aria-label="Version history">
+    <h3>Presentation revisions</h3>
+    <div id="ver-list"></div>
+    <div class="ver-actions">
+      <button class="chip" id="ver-reset">Reset local edits</button>
+      <button class="chip" id="ver-close">Close</button>
+    </div>
+  </aside>
+
+  <!-- runtimes -->
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- data -->
+  <script src="js/data/magnolia.js"></script>
+  <script src="js/data/materials.js"></script>
+  <script src="js/data/photos.js"></script>
+  <script src="js/data/versions.js"></script>
+
+  <!-- components -->
+  <script src="js/components/scopemap.js"></script>
+  <script src="js/components/sheetviewer.js"></script>
+  <script src="js/components/gallery.js"></script>
+  <script src="js/components/sequence.js"></script>
+  <script src="js/components/matrix.js"></script>
+  <script src="js/components/photogrid.js"></script>
+  <script src="js/components/model.js"></script>
+  <script src="js/components/slides.js"></script>
+  <script src="js/components/shell.js"></script>
+
+  <script>
+    MAG.Slides.build();
+    MAG.Shell.init();
+  </script>
+</body>
+</html>

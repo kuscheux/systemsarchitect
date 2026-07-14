@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 168 64" role="img" aria-labelledby="title desc">
+  <title id="title">ES logo</title>
+  <desc id="desc">Minimal ES wordmark</desc>
+  <path fill="currentColor" d="M18 12h58v10H30v10h40v10H30v10h47v10H18V12Zm81 0h49v10h-45c-6 0-9 2-9 6 0 4 3 6 9 6h25c15 0 24 7 24 20 0 12-9 20-25 20H85V52h42c6 0 9-2 9-6s-3-6-9-6h-25c-15 0-24-7-24-20 0-12 9-20 21-20Z"/>
+</svg>

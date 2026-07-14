@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SUPAFI-AI — Magnolia · Pending</title>
+  <meta name="description" content="Subcontractors' Unified Platform Advancing Field Intelligence — Magnolia glazing & cladding package by 1CG.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📍</text></svg>">
+</head>
+<body>
+
+  <!-- ============ ROLE GATE (RBAC) ============ -->
+  <div id="gate">
+    <div class="gate-inner">
+      <div class="gate-brand">SUPAFI-AI · RESEARCH BUILD 001</div>
+      <h1 class="gate-title">Subcontractors' Unified Platform<br><em>Advancing Field Intelligence</em></h1>
+      <p class="gate-sub">Every contractor gets a platform. This one starts where <b>1CG</b> starts —
+        <b>glazing &amp; cladding: one company, one package.</b> Drawings in. Takeoff, 3D model,
+        materials, CRM and a client-ready presentation out. Pick your seat:</p>
+      <div class="gate-pick">ROLE-BASED ACCESS — CHOOSE HOW YOU ENTER</div>
+      <div id="role-grid"></div>
+    </div>
+  </div>
+
+  <!-- ============ APP ============ -->
+  <div id="app" class="hidden">
+    <header id="topbar">
+      <span class="tb-brand">SUPAFI-AI</span>
+      <div class="tb-proj">Magnolia <small>· Charleston, SC</small> <span id="hdr-status" data-s="pending">PENDING</span></div>
+      <div class="tb-right"><span id="hdr-role"></span></div>
+    </header>
+
+    <nav id="stepper" aria-label="Project timeline"></nav>
+
+    <main id="chapters">
+      <section class="chapter" id="ch-map"></section>
+      <section class="chapter" id="ch-intake"></section>
+      <section class="chapter" id="ch-takeoff"></section>
+      <section class="chapter" id="ch-model"></section>
+      <section class="chapter" id="ch-materials"></section>
+      <section class="chapter" id="ch-scope"></section>
+      <section class="chapter" id="ch-crm"></section>
+      <section class="chapter" id="ch-present"></section>
+    </main>
+  </div>
+
+  <div id="global-chip"></div>
+  <div id="presentation"></div>
+  <div id="lightbox"><img alt=""></div>
+  <div id="curtain-root"></div>
+
+  <!-- ============ runtimes ============ -->
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/motion@11/dist/motion.js"></script>
+
+  <!-- ============ SUPAFI ============ -->
+  <script src="js/data.js"></script>
+  <script src="js/curtains.js"></script>
+  <script src="js/blueprint.js"></script>
+  <script src="js/model3d.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/crm.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
