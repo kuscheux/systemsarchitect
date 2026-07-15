@@ -178,6 +178,7 @@ function NarrativeScene({
 
       <section
         aria-hidden={hideNarrative}
+        style={{ display: hideNarrative ? "none" : undefined }}
         className={`magnolia-scene relative z-20 mt-auto grid min-h-0 gap-6 px-5 pb-20 transition-all duration-500 sm:px-8 sm:pb-24 lg:grid-cols-[minmax(0,1fr)_minmax(290px,0.48fr)] lg:items-end lg:gap-10 lg:px-12 ${
           hideNarrative ? "pointer-events-none translate-y-3 opacity-0" : "translate-y-0 opacity-100"
         } ${isLight ? "text-[#090b0f]" : "text-white"}`}

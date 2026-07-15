@@ -221,7 +221,7 @@ const magnoliaSceneContent: MagnoliaSceneContent[] = [
     lead: "Glazing, cladding, screening, entrances, and installation aligned around one Charleston exterior envelope.",
     image: "/images/magnolia/magnolia-rfp-rendering.webp",
     video: "/videos/brand/1cg-brand-anthem.mp4",
-    durationMs: 216000,
+    durationMs: 226000,
     metrics: [
       { label: "Status", value: "Design Assist" },
       { label: "Package", value: "Exterior Envelope" },
