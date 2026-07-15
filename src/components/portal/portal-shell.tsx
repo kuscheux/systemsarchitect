@@ -2,7 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   BriefcaseBusiness,
+  Building2,
   ClipboardCheck,
+  Database,
   Factory,
   FolderKanban,
   LayoutDashboard,
@@ -17,7 +19,9 @@ import type { PortalProfile } from "@/lib/portal/types";
 const portalNav = [
   ["Overview", "/portal", LayoutDashboard],
   ["Projects", "/portal/projects", FolderKanban],
+  ["Companies", "/portal/companies", Building2],
   ["Project map", "/portal/projects/map", MapPinned],
+  ["Asset library", "/portal/assets", Database],
   ["Fab requests", "/portal/fab-requests", Factory],
   ["Approvals", "/portal/approvals", ClipboardCheck],
   ["Publication", "/portal/publication-queue", Megaphone],

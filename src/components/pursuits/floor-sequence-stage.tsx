@@ -31,7 +31,7 @@ export function FloorSequenceStage({ scene }: FloorSequenceStageProps) {
           <h1 className="mt-4 max-w-4xl text-balance text-[clamp(3rem,6.2vw,7.4rem)] font-semibold leading-[0.9] tracking-normal text-white">
             {scene.title}
           </h1>
-          <p className="mt-5 max-w-2xl text-sm leading-6 text-white/70 lg:text-base lg:leading-7">{scene.body}</p>
+          <p className="mt-5 max-w-2xl text-sm leading-6 text-white/70 lg:text-base lg:leading-7">{scene.lead}</p>
           <div className="mt-6 grid max-w-2xl grid-cols-3 border-y border-white/18">
             {scene.metrics.map((metric) => (
               <div key={metric.label} className="border-r border-white/18 px-3 py-3 first:pl-0 last:border-r-0">

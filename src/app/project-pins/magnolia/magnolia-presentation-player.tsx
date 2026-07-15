@@ -3,19 +3,20 @@
 import Link from "next/link";
 import { blinds } from "motion-plus/curtains";
 import { useCurtains } from "motion-plus/react";
-import { ArrowLeft, PanelRightOpen, Play } from "lucide-react";
+import { ArrowLeft, Monitor, Moon, PanelRightOpen, Play, Sun } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PresentationControls } from "@/components/pursuits/presentation-controls";
 import { PresenterDrawer } from "@/components/pursuits/presenter-drawer";
 import { PursuitBrandLockup } from "@/components/pursuits/pursuit-brand-lockup";
-import { SceneStage } from "@/components/pursuits/scene-stage";
+import { SceneRenderer } from "@/components/pursuits/scene-renderer";
 import {
   chapterFirstSceneIndex,
   magnoliaChapters,
   magnoliaScenes,
+  magnoliaSourceReferences,
 } from "@/data/presentation/magnolia-story";
 import { magnoliaDecisions, magnoliaHotspots } from "@/data/projects/magnolia";
-import type { Hotspot, MagnoliaChapterId } from "@/data/pursuits/types";
+import type { Hotspot, MagnoliaChapterId, PresentationTheme } from "@/data/pursuits/types";
 import { magnoliaVendorProducts } from "@/data/vendors";
 
 const CONTROLS_IDLE_MS = 2000;
@@ -31,7 +32,9 @@ export function MagnoliaPresentationPlayer() {
   const [isMuted, setIsMuted] = useState(true);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [focusedHotspotId, setFocusedHotspotId] = useState<string | null>(null);
+  const [activeHotspotId, setActiveHotspotId] = useState<string | null>(null);
+  const [selectedReferenceId, setSelectedReferenceId] = useState<string | null>(null);
+  const [theme, setTheme] = useState<PresentationTheme>("auto");
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const current = magnoliaScenes[index];
@@ -39,6 +42,8 @@ export function MagnoliaPresentationPlayer() {
     (chapter) => chapter.id === current.chapterId,
   )!;
   const hideNarrative = isPlaying && Boolean(current.video);
+  const appearance = theme === "auto" ? current.preferredTheme : theme;
+  const isReferenceScene = current.type === "reference";
 
   const sceneHotspots = useMemo(
     () =>
@@ -47,16 +52,25 @@ export function MagnoliaPresentationPlayer() {
         .filter((hotspot): hotspot is Hotspot => Boolean(hotspot)),
     [current.hotspotIds],
   );
+  const resolvedHotspotId = sceneHotspots.some((item) => item.id === activeHotspotId)
+    ? activeHotspotId
+    : sceneHotspots[0]?.id ?? null;
+  const resolvedReferenceId = current.referenceProjects?.some(
+    (item) => item.id === selectedReferenceId,
+  )
+    ? selectedReferenceId
+    : current.referenceProjects?.[0]?.id ?? null;
 
   const drawerProducts = useMemo(() => {
-    const hotspots = focusedHotspotId
-      ? sceneHotspots.filter((hotspot) => hotspot.id === focusedHotspotId)
+    const hotspots = resolvedHotspotId
+      ? sceneHotspots.filter((hotspot) => hotspot.id === resolvedHotspotId)
       : sceneHotspots;
-    const productIds = new Set(
-      hotspots.map((hotspot) => hotspot.productId).filter(Boolean),
-    );
+    const productIds = new Set([
+      ...(current.productIds ?? []),
+      ...hotspots.map((hotspot) => hotspot.productId).filter((id): id is string => Boolean(id)),
+    ]);
     return magnoliaVendorProducts.filter((product) => productIds.has(product.id));
-  }, [focusedHotspotId, sceneHotspots]);
+  }, [current.productIds, resolvedHotspotId, sceneHotspots]);
 
   const drawerDecisions = useMemo(() => {
     const ids = new Set(current.decisionIds ?? []);
@@ -85,7 +99,6 @@ export function MagnoliaPresentationPlayer() {
   }, [scheduleControlsHide]);
 
   const closeDrawer = useCallback(() => {
-    setFocusedHotspotId(null);
     setDrawerOpen(false);
     setControlsVisible(true);
   }, []);
@@ -95,7 +108,8 @@ export function MagnoliaPresentationPlayer() {
       if (isTransitioning) return;
       const normalized = (next + magnoliaScenes.length) % magnoliaScenes.length;
       const scope = stageRef.current;
-      setFocusedHotspotId(null);
+      setActiveHotspotId(null);
+      setSelectedReferenceId(null);
       setDrawerOpen(false);
 
       if (!scope) {
@@ -141,14 +155,21 @@ export function MagnoliaPresentationPlayer() {
     }
   }, [isPlaying, scheduleControlsHide, startPlayback]);
 
-  const openDrawer = useCallback((hotspot?: Hotspot) => {
+  const openDrawer = useCallback(() => {
     setIsPlaying(false);
     videoRef.current?.pause();
-    setFocusedHotspotId(hotspot?.id ?? null);
     setDrawerOpen(true);
     setControlsVisible(true);
     clearControlsTimer();
   }, [clearControlsTimer]);
+
+  const cycleTheme = useCallback(() => {
+    setTheme((value) => {
+      const next = value === "auto" ? "light" : value === "light" ? "dark" : "auto";
+      window.localStorage.setItem("1cg-magnolia-theme", next);
+      return next;
+    });
+  }, []);
 
   const selectChapter = useCallback(
     (chapterId: MagnoliaChapterId) => {
@@ -157,6 +178,13 @@ export function MagnoliaPresentationPlayer() {
     },
     [goTo],
   );
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem("1cg-magnolia-theme");
+    if (saved !== "auto" && saved !== "light" && saved !== "dark") return;
+    const frame = window.requestAnimationFrame(() => setTheme(saved));
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   useEffect(() => {
     scheduleControlsHide();
@@ -196,10 +224,11 @@ export function MagnoliaPresentationPlayer() {
   }, [drawerOpen, goTo, index, openDrawer, requestFullscreen, revealControls, togglePlayback]);
 
   return (
-    <main className="min-h-screen bg-[#050505] p-2 text-white sm:p-3 lg:p-4">
+    <main className={`min-h-screen p-2 sm:p-3 lg:p-4 ${appearance === "light" ? "bg-[#e9e9e5] text-black" : "bg-[#050505] text-white"}`}>
       <div
         ref={stageRef}
-        className={`presentation-stage group relative mx-auto flex max-w-[1920px] flex-col overflow-hidden bg-black shadow-2xl shadow-black/40 ${
+        data-presentation-theme={appearance}
+        className={`presentation-stage group relative mx-auto flex max-w-[1920px] flex-col overflow-hidden ${isReferenceScene ? "shadow-none" : "shadow-2xl shadow-black/40"} ${appearance === "light" ? "bg-[#f2f2ef] text-black" : "bg-black text-white"} ${
           isFullscreen && !controlsVisible && !drawerOpen ? "cursor-none" : ""
         }`}
         onPointerMove={revealControls}
@@ -217,14 +246,19 @@ export function MagnoliaPresentationPlayer() {
           goTo(index + (end < start ? 1 : -1));
         }}
       >
-        <SceneStage
+        <SceneRenderer
           scene={current}
           sceneIndex={index}
           videoRef={videoRef}
           isMuted={isMuted}
           hideNarrative={hideNarrative}
+          appearance={appearance}
           hotspots={sceneHotspots}
-          onHotspotOpen={openDrawer}
+          activeHotspotId={resolvedHotspotId}
+          selectedReferenceId={resolvedReferenceId}
+          onSelectHotspot={setActiveHotspotId}
+          onSelectReference={setSelectedReferenceId}
+          interactionPaused={drawerOpen}
           onVideoEnded={() => {
             setIsPlaying(false);
             setControlsVisible(true);
@@ -238,11 +272,11 @@ export function MagnoliaPresentationPlayer() {
               : "pointer-events-none opacity-0"
           }`}
         >
-          <PursuitBrandLockup />
+          <PursuitBrandLockup appearance={appearance} />
           <div className="flex items-center gap-2">
             <Link
               href="/project-pins"
-              className="inline-flex h-11 items-center gap-2 border border-white/14 bg-black/38 px-3 text-xs font-medium text-white shadow-xl shadow-black/10 backdrop-blur-xl transition hover:bg-white hover:text-black sm:px-4"
+              className={`inline-flex h-11 items-center gap-2 border px-3 text-xs font-medium backdrop-blur-xl transition sm:px-4 ${isReferenceScene ? "shadow-none" : "shadow-xl"} ${appearance === "light" ? "border-black/12 bg-white/82 text-black hover:bg-black hover:text-white" : "border-white/14 bg-black/38 text-white hover:bg-white hover:text-black"}`}
             >
               <ArrowLeft size={15} />
               <span className="hidden sm:inline">Magnolia Landing</span>
@@ -250,8 +284,17 @@ export function MagnoliaPresentationPlayer() {
             </Link>
             <button
               type="button"
+              onClick={cycleTheme}
+              className={`grid size-11 place-items-center border backdrop-blur-xl transition ${isReferenceScene ? "shadow-none" : "shadow-xl"} ${appearance === "light" ? "border-black/12 bg-white/82 text-black hover:bg-black hover:text-white" : "border-white/14 bg-black/38 text-white hover:bg-white hover:text-black"}`}
+              aria-label={`Theme: ${theme}. Change theme`}
+              title={`Theme: ${theme}`}
+            >
+              {theme === "auto" ? <Monitor size={18} /> : theme === "light" ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+            <button
+              type="button"
               onClick={() => openDrawer()}
-              className="grid size-11 place-items-center border border-white/14 bg-black/38 text-white shadow-xl shadow-black/10 backdrop-blur-xl transition hover:bg-white hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className={`grid size-11 place-items-center border backdrop-blur-xl transition focus-visible:outline-none focus-visible:ring-2 ${isReferenceScene ? "shadow-none" : "shadow-xl"} ${appearance === "light" ? "border-black/12 bg-white/82 text-black hover:bg-black hover:text-white focus-visible:ring-black" : "border-white/14 bg-black/38 text-white hover:bg-white hover:text-black focus-visible:ring-white"}`}
               aria-label="Open presenter notes"
               title="Presenter notes"
             >
@@ -283,6 +326,7 @@ export function MagnoliaPresentationPlayer() {
             onToggleMuted={() => setIsMuted((value) => !value)}
             onToggleFullscreen={() => void requestFullscreen()}
             onSelectChapter={selectChapter}
+            appearance={appearance}
           />
         </div>
 
@@ -305,6 +349,8 @@ export function MagnoliaPresentationPlayer() {
           chapter={currentChapter}
           products={drawerProducts}
           decisions={drawerDecisions}
+          appearance={appearance}
+          sources={magnoliaSourceReferences}
           onClose={closeDrawer}
         />
       </div>

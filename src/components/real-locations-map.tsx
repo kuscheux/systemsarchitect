@@ -13,22 +13,14 @@ import {
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Map as MapLibreMap, Marker as MapLibreMarker } from "maplibre-gl";
 import type { Project } from "@/data/projects";
 import { getProjectLocation } from "@/data/project-locations";
 import { MobileProjectExplorer } from "@/components/mobile-project-explorer";
-
-const SOUTHEAST_BOUNDS: [[number, number], [number, number]] = [
-  [-87.25, 29.65],
-  [-77.15, 36.65],
-];
-
-const CHARLOTTE_CAMERA = {
-  center: [-80.8504, 35.2207] as [number, number],
-  zoom: 14.1,
-  pitch: 70,
-  bearing: -18,
-};
+import {
+  ProjectMapCore,
+  type MappableProject,
+  type ProjectMapCoreHandle,
+} from "@/components/maps/project-map-core";
 
 const officeLocations = [
   {
@@ -54,70 +46,11 @@ const officeLocations = [
   directions: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(office.address)}`,
 }));
 
-function addBuildingExtrusions(map: MapLibreMap) {
-  if (map.getLayer("1cg-3d-buildings")) return;
-
-  const labelLayer = map
-    .getStyle()
-    .layers?.find((layer) => layer.type === "symbol" && layer.layout?.["text-field"]);
-
-  map.addLayer(
-    {
-      id: "1cg-3d-buildings",
-      source: "openmaptiles",
-      "source-layer": "building",
-      type: "fill-extrusion",
-      minzoom: 12.5,
-      paint: {
-        "fill-extrusion-color": [
-          "interpolate",
-          ["linear"],
-          [
-            "case",
-            ["!=", ["get", "render_height"], null],
-            ["to-number", ["get", "render_height"]],
-            ["!=", ["get", "height"], null],
-            ["to-number", ["get", "height"]],
-            8,
-          ],
-          0,
-          "#ecece8",
-          70,
-          "#c7cbcd",
-          180,
-          "#9ca3a6",
-        ],
-        "fill-extrusion-height": [
-          "case",
-          ["!=", ["get", "render_height"], null],
-          ["to-number", ["get", "render_height"]],
-          ["!=", ["get", "height"], null],
-          ["to-number", ["get", "height"]],
-          8,
-        ],
-        "fill-extrusion-base": [
-          "case",
-          ["!=", ["get", "render_min_height"], null],
-          ["to-number", ["get", "render_min_height"]],
-          ["!=", ["get", "min_height"], null],
-          ["to-number", ["get", "min_height"]],
-          0,
-        ],
-        "fill-extrusion-opacity": 0.93,
-      },
-    },
-    labelLayer?.id,
-  );
-}
-
 export function RealLocationsMap({ projects }: { projects: Project[] }) {
-  const mapElementRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<MapLibreMap | null>(null);
-  const markerRefs = useRef<Record<string, MapLibreMarker>>({});
+  const mapCoreRef = useRef<ProjectMapCoreHandle | null>(null);
   const projectRowRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const expandButtonRef = useRef<HTMLButtonElement | null>(null);
-  const [isMapReady, setIsMapReady] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedProjectSlug, setSelectedProjectSlug] = useState<string | null>(null);
   const [selectedOffice, setSelectedOffice] = useState<number | null>(null);
@@ -139,34 +72,65 @@ export function RealLocationsMap({ projects }: { projects: Project[] }) {
     );
   }, [projects, query]);
 
+  const mapLocations = useMemo<MappableProject[]>(
+    () => [
+      ...projects.map((project) => {
+        const location = getProjectLocation(project.slug);
+        return {
+          id: project.slug,
+          name: project.name,
+          longitude: location.longitude,
+          latitude: location.latitude,
+          kind: "project" as const,
+        };
+      }),
+      ...officeLocations.map((office, index) => ({
+        id: `office:${index}`,
+        name: office.name,
+        longitude: office.coordinates[0],
+        latitude: office.coordinates[1],
+        kind: "office" as const,
+      })),
+    ],
+    [projects],
+  );
+
+  const selectedMapId =
+    selectedOffice === null ? selectedProjectSlug : `office:${selectedOffice}`;
+
   const showSoutheast = useCallback(() => {
-    mapRef.current?.fitBounds(SOUTHEAST_BOUNDS, {
-      padding: isExpanded ? 70 : 45,
-      pitch: 24,
-      bearing: 0,
-      duration: 1300,
-    });
+    mapCoreRef.current?.fitPreset("southeast");
     setSelectedOffice(null);
     setSelectedProjectSlug(null);
-  }, [isExpanded]);
+  }, []);
 
   const focusProject = useCallback((project: Project, openExplorer = true) => {
-    const location = getProjectLocation(project.slug);
     setSelectedProjectSlug(project.slug);
     setSelectedOffice(null);
     if (openExplorer) setIsExpanded(true);
-    mapRef.current?.flyTo({
-      center: [location.longitude, location.latitude],
-      zoom: 17.15,
-      pitch: 68,
-      bearing: -20,
-      duration: 1500,
-      essential: true,
-    });
+    mapCoreRef.current?.flyToLocation(project.slug);
     window.setTimeout(() => {
       projectRowRefs.current[project.slug]?.scrollIntoView({ block: "nearest", behavior: "smooth" });
     }, 250);
   }, []);
+
+  const handleMapSelect = useCallback(
+    (id: string) => {
+      if (id.startsWith("office:")) {
+        const officeIndex = Number(id.slice("office:".length));
+        if (!Number.isInteger(officeIndex) || !officeLocations[officeIndex]) return;
+        setSelectedProjectSlug(null);
+        setSelectedOffice(officeIndex);
+        setIsExpanded(true);
+        mapCoreRef.current?.flyToLocation(id);
+        return;
+      }
+
+      const project = projects.find((item) => item.slug === id);
+      if (project) focusProject(project);
+    },
+    [focusProject, projects],
+  );
 
   const closeExplorer = useCallback(() => {
     setIsExpanded(false);
@@ -174,128 +138,8 @@ export function RealLocationsMap({ projects }: { projects: Project[] }) {
   }, []);
 
   useEffect(() => {
-    let mounted = true;
-    const markers: MapLibreMarker[] = [];
-
-    async function initializeMap() {
-      if (!mapElementRef.current || mapRef.current) return;
-      const maplibre = await import("maplibre-gl");
-      if (!mounted || !mapElementRef.current) return;
-
-      const map = new maplibre.Map({
-        container: mapElementRef.current,
-        style: "https://tiles.openfreemap.org/styles/positron",
-        ...CHARLOTTE_CAMERA,
-        minZoom: 4,
-        maxZoom: 19,
-        maxPitch: 85,
-        attributionControl: false,
-      });
-      mapRef.current = map;
-      map.addControl(new maplibre.NavigationControl({ visualizePitch: true }), "bottom-right");
-      map.addControl(
-        new maplibre.AttributionControl({ compact: true, customAttribution: "1CG project locations" }),
-        "bottom-left",
-      );
-
-      const syncCameraState = () => {
-        if (mapElementRef.current) {
-          mapElementRef.current.dataset.mapZoom = map.getZoom().toFixed(2);
-          mapElementRef.current.dataset.mapPitch = map.getPitch().toFixed(1);
-          mapElementRef.current.dataset.mapBearing = map.getBearing().toFixed(1);
-        }
-      };
-      const syncLabelVisibility = () => {
-        const showLabels = map.getZoom() >= 10.4;
-        Object.values(markerRefs.current).forEach((marker) => {
-          marker.getElement().classList.toggle("show-label", showLabels);
-        });
-      };
-
-      map.on("load", () => {
-        addBuildingExtrusions(map);
-        map.setLight({ anchor: "viewport", color: "#ffffff", intensity: 0.42 });
-        map.setSky({
-          "sky-color": "#82b9d8",
-          "horizon-color": "#f8faf9",
-          "fog-color": "#edf1f2",
-          "sky-horizon-blend": 0.42,
-          "horizon-fog-blend": 0.72,
-          "fog-ground-blend": 0.68,
-          "atmosphere-blend": 0.82,
-        });
-        map.jumpTo(CHARLOTTE_CAMERA);
-        setIsMapReady(true);
-        syncCameraState();
-        syncLabelVisibility();
-      });
-      map.on("move", syncCameraState);
-      map.on("zoomend", syncLabelVisibility);
-
-      projects.forEach((project) => {
-        const location = getProjectLocation(project.slug);
-        const markerButton = document.createElement("button");
-        const markerPin = document.createElement("span");
-        const markerDot = document.createElement("span");
-        const markerLabel = document.createElement("span");
-        markerButton.type = "button";
-        markerButton.className = "project-map-marker";
-        markerButton.setAttribute("aria-label", `View ${project.name}`);
-        markerPin.className = "project-map-marker-pin";
-        markerLabel.className = "project-map-marker-label";
-        markerLabel.textContent = project.name;
-        markerPin.append(markerDot);
-        markerButton.append(markerPin, markerLabel);
-        markerButton.addEventListener("click", (event) => {
-          event.stopPropagation();
-          focusProject(project);
-        });
-        const marker = new maplibre.Marker({ element: markerButton, anchor: "bottom" })
-          .setLngLat([location.longitude, location.latitude])
-          .addTo(map);
-        markerRefs.current[project.slug] = marker;
-        markers.push(marker);
-      });
-
-      officeLocations.forEach((office, index) => {
-        const markerButton = document.createElement("button");
-        const markerPin = document.createElement("span");
-        const markerDot = document.createElement("span");
-        const markerLabel = document.createElement("span");
-        markerButton.type = "button";
-        markerButton.className = "project-map-marker office-map-marker";
-        markerButton.setAttribute("aria-label", `View ${office.name}`);
-        markerPin.className = "project-map-marker-pin";
-        markerLabel.className = "project-map-marker-label";
-        markerLabel.textContent = office.name;
-        markerPin.append(markerDot);
-        markerButton.append(markerPin, markerLabel);
-        markerButton.addEventListener("click", (event) => {
-          event.stopPropagation();
-          setSelectedOffice(index);
-          setSelectedProjectSlug(null);
-          setIsExpanded(true);
-          map.flyTo({ center: office.coordinates, zoom: 16.4, pitch: 60, bearing: -18, duration: 1400 });
-        });
-        const marker = new maplibre.Marker({ element: markerButton, anchor: "bottom" })
-          .setLngLat(office.coordinates)
-          .addTo(map);
-        markers.push(marker);
-      });
-    }
-
-    void initializeMap();
-    return () => {
-      mounted = false;
-      markers.forEach((marker) => marker.remove());
-      markerRefs.current = {};
-      mapRef.current?.remove();
-      mapRef.current = null;
-    };
-  }, [focusProject, projects]);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => mapRef.current?.resize(), 80);
+    const mapCore = mapCoreRef.current;
+    const timer = window.setTimeout(() => mapCoreRef.current?.resize(), 80);
     if (!isExpanded) return () => window.clearTimeout(timer);
 
     const previousOverflow = document.body.style.overflow;
@@ -310,7 +154,7 @@ export function RealLocationsMap({ projects }: { projects: Project[] }) {
       window.clearTimeout(timer);
       window.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previousOverflow;
-      window.setTimeout(() => mapRef.current?.resize(), 80);
+      window.setTimeout(() => mapCore?.resize(), 80);
     };
   }, [closeExplorer, isExpanded]);
 
@@ -351,12 +195,16 @@ export function RealLocationsMap({ projects }: { projects: Project[] }) {
                   : "relative min-h-[600px] cursor-default overflow-hidden rounded-[1.25rem] border border-border bg-[#e7ebed] shadow-2xl shadow-black/10 md:min-h-[760px]"
               }
             >
-              <div ref={mapElementRef} className={isExpanded ? "real-map h-full w-full" : "real-map h-[600px] w-full md:h-[760px]"} />
-              {!isMapReady ? (
-                <div className="absolute inset-0 grid place-items-center bg-[#e7ebed] text-sm text-muted">
-                  Loading 3D project map...
-                </div>
-              ) : null}
+              <ProjectMapCore
+                ref={mapCoreRef}
+                locations={mapLocations}
+                selectedId={selectedMapId}
+                onSelect={handleMapSelect}
+                cameraPreset="charlotte"
+                appearance="light"
+                mode="public-explorer"
+                className={isExpanded ? "h-full w-full" : "h-[600px] w-full md:h-[760px]"}
+              />
 
               <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-2 sm:left-4 sm:top-4">
                 <button type="button" onClick={showSoutheast} className="map-floating-control">
@@ -364,7 +212,7 @@ export function RealLocationsMap({ projects }: { projects: Project[] }) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => mapRef.current?.flyTo({ ...CHARLOTTE_CAMERA, duration: 1300 })}
+                  onClick={() => mapCoreRef.current?.fitPreset("charlotte")}
                   className="map-floating-control hidden sm:inline-flex"
                 >
                   <Building2 size={15} /> Charlotte 3D

@@ -509,8 +509,16 @@ a {
 }
 
 .project-map-marker:hover .project-map-marker-pin,
-.project-map-marker:focus-visible .project-map-marker-pin {
+.project-map-marker:focus-visible .project-map-marker-pin,
+.project-map-marker.is-highlighted .project-map-marker-pin,
+.project-map-marker.is-active .project-map-marker-pin {
   transform: rotate(-45deg) scale(1.18);
+}
+
+.project-map-marker.is-active .project-map-marker-pin {
+  box-shadow:
+    0 0 0 9px rgba(236, 28, 36, 0.22),
+    0 18px 42px rgba(8, 9, 10, 0.36);
 }
 
 .office-map-marker .project-map-marker-pin {
@@ -532,6 +540,13 @@ a {
 
 .presentation-stage {
   min-height: calc(100svh - 1rem);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  letter-spacing: 0;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.presentation-stage * {
+  letter-spacing: 0;
 }
 
 @media (min-width: 760px) and (min-aspect-ratio: 4 / 3) {
@@ -645,10 +660,74 @@ a {
 }
 
 .project-map-marker.show-label .project-map-marker-label,
+.project-map-marker.is-highlighted .project-map-marker-label,
+.project-map-marker.is-active .project-map-marker-label,
 .project-map-marker:hover .project-map-marker-label,
 .project-map-marker:focus-visible .project-map-marker-label {
   opacity: 1;
   transform: translate(-50%, 0);
+}
+
+.real-map[data-map-appearance="dark"] .project-map-marker-label {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(8, 10, 13, 0.94);
+  color: white;
+}
+
+.real-map[data-map-mode="presentation"] .project-map-marker-pin,
+.real-map[data-map-mode="presentation"] .project-map-marker.is-active .project-map-marker-pin,
+.real-map[data-map-mode="presentation"] .project-map-marker-label {
+  box-shadow: none;
+}
+
+.real-map[data-map-mode="presentation"] .project-map-marker-label {
+  border-radius: 0;
+}
+
+.real-map[data-map-mode="presentation"] .pending-map-marker .project-map-marker-pin {
+  border-color: #ec1c24;
+  background: #fff;
+}
+
+.real-map[data-map-mode="presentation"] .pending-map-marker .project-map-marker-pin span {
+  background: #ec1c24;
+}
+
+.reference-project-detail {
+  animation: reference-project-detail-in 280ms ease-out;
+}
+
+@keyframes reference-project-detail-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reference-project-detail {
+    animation: none;
+  }
+}
+
+.presenter-drawer[data-drawer-appearance="light"] [class*="text-white"] {
+  color: rgba(9, 11, 15, 0.72) !important;
+}
+
+.presenter-drawer[data-drawer-appearance="light"] .text-white {
+  color: #090b0f !important;
+}
+
+.presenter-drawer[data-drawer-appearance="light"] [class*="border-white"] {
+  border-color: rgba(9, 11, 15, 0.14) !important;
+}
+
+.presenter-drawer[data-drawer-appearance="light"] [class*="bg-\[\#111317\]"] {
+  background: #ffffff !important;
 }
 
 .map-popup-list {

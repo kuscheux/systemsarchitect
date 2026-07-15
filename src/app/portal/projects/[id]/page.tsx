@@ -48,7 +48,7 @@ export default async function PortalProjectDetailPage({ params }: { params: Prom
         eyebrow={`${project.market || "Market pending"} / ${project.location || "Location pending"}`}
         title={project.name}
         description={`${project.client_name || "Client pending"} · Owned by ${owner?.full_name || owner?.email || "unassigned"}`}
-        action={<div className="flex flex-wrap items-center gap-2">{project.presentation_url ? <Link href={project.presentation_url} className={primaryButtonClass}>Open presentation <ExternalLink size={14} /></Link> : null}<StatusBadge value={project.status} /><StatusBadge value={project.public_visibility_status} /></div>}
+        action={<div className="flex flex-wrap items-center gap-2">{workspace.company ? <Link href={`/portal/companies/${workspace.company.id}`} className={secondaryButtonClass}>{workspace.company.name}</Link> : null}{project.presentation_url ? <Link href={project.presentation_url} className={primaryButtonClass}>Open presentation <ExternalLink size={14} /></Link> : null}<StatusBadge value={project.status} /><StatusBadge value={project.public_visibility_status} /></div>}
       />
 
       <section className="grid gap-4 md:grid-cols-4">
@@ -65,10 +65,11 @@ export default async function PortalProjectDetailPage({ params }: { params: Prom
           <div className="md:col-span-2 flex items-center justify-between border-b border-zinc-200 pb-4"><div><h2 className="text-xl font-semibold tracking-[-0.035em]">Project record</h2><p className="mt-1 text-xs text-zinc-500">Internal facts and public copy are stored separately.</p></div><LockKeyhole size={18} className="text-zinc-400" /></div>
           <Field label="Project name"><input name="name" defaultValue={project.name} readOnly={!canEditInternal} className={inputClass} /></Field>
           <Field label="Client"><input name="client_name" defaultValue={project.client_name} readOnly={!canEditInternal} className={inputClass} /></Field>
+          <Field label="Company"><select name="company_id" defaultValue={project.company_id ?? ""} disabled={!canEditInternal} className={inputClass}><option value="">No company linked</option>{workspace.companies.map((company) => <option key={company.id} value={company.id}>{company.name}</option>)}</select></Field>
           <Field label="Location"><input name="location" defaultValue={project.location} readOnly={!canEditInternal} className={inputClass} /></Field>
           <Field label="Market"><input name="market" defaultValue={project.market} readOnly={!canEditInternal} className={inputClass} /></Field>
           <Field label="Project type"><input name="project_type" defaultValue={project.project_type} readOnly={!canEditInternal} className={inputClass} /></Field>
-          <Field label="Internal status"><select name="status" defaultValue={project.status} disabled={!canEditInternal} className={inputClass}><option value="active">Active</option><option value="on_hold">On hold</option><option value="complete">Complete</option><option value="archived">Archived</option></select></Field>
+          <Field label="Internal status"><select name="status" defaultValue={project.status} disabled={!canEditInternal} className={inputClass}><option value="pending">Pending</option><option value="active">Active</option><option value="on_hold">On hold</option><option value="complete">Complete</option><option value="archived">Archived</option></select></Field>
           <div className="md:col-span-2"><Field label="Internal description" hint="Protected. Never returned by the public query layer."><textarea name="internal_description" defaultValue={project.internal_description} readOnly={!canEditInternal} className={textareaClass} /></Field></div>
           <div className="md:col-span-2"><Field label="Public description" hint="Eligible for publication only after review."><textarea name="public_description" defaultValue={project.public_description} readOnly={!canEdit} className={textareaClass} /></Field></div>
           {canEdit ? <div className="md:col-span-2"><button className={primaryButtonClass}>Save project record</button></div> : null}

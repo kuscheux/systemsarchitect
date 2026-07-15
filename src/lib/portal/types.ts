@@ -21,6 +21,7 @@ export type PortalProfile = {
 
 export type PortalProject = {
   id: string;
+  company_id: string | null;
   name: string;
   slug: string;
   client_name: string;
@@ -55,6 +56,38 @@ export type PortalProject = {
   approved_by: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type PortalCompany = {
+  id: string;
+  name: string;
+  slug: string;
+  website: string;
+  description: string;
+  primary_address: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  phone: string;
+  email: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PortalCompanyContact = {
+  id: string;
+  company_id: string;
+  full_name: string;
+  title: string;
+  email: string;
+  phone: string;
+  is_primary: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PortalCompanySummary = PortalCompany & {
+  project_count: number;
 };
 
 export type FabRequest = {

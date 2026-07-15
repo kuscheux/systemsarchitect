@@ -3,10 +3,11 @@ import type { Hotspot } from "@/data/pursuits/types";
 
 type HotspotLayerProps = {
   hotspots: Hotspot[];
+  activeId?: string;
   onOpen: (hotspot: Hotspot) => void;
 };
 
-export function HotspotLayer({ hotspots, onOpen }: HotspotLayerProps) {
+export function HotspotLayer({ hotspots, activeId, onOpen }: HotspotLayerProps) {
   return (
     <div className="pointer-events-none absolute inset-0 z-10" aria-label="Project system locations">
       {hotspots.map((hotspot, index) => (
@@ -14,7 +15,7 @@ export function HotspotLayer({ hotspots, onOpen }: HotspotLayerProps) {
           key={hotspot.id}
           type="button"
           onClick={() => onOpen(hotspot)}
-          className="group pointer-events-auto absolute grid size-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/55 bg-black/68 text-white shadow-[0_0_0_8px_rgba(255,255,255,0.08)] backdrop-blur-md transition hover:scale-110 hover:bg-white hover:text-black focus-visible:scale-110 focus-visible:bg-white focus-visible:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 sm:size-9"
+          className={`group pointer-events-auto absolute grid size-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/55 text-white shadow-[0_0_0_8px_rgba(255,255,255,0.08)] backdrop-blur-md transition hover:scale-110 hover:bg-white hover:text-black focus-visible:scale-110 focus-visible:bg-white focus-visible:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 sm:size-9 ${activeId === hotspot.id ? "scale-110 bg-[#b3192b] text-white shadow-[0_0_0_9px_rgba(179,25,43,0.18)]" : "bg-black/68"}`}
           style={{ left: `${hotspot.xPct}%`, top: `${hotspot.yPct}%` }}
           aria-label={`Open ${hotspot.label} details`}
         >

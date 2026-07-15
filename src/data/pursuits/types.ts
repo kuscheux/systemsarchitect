@@ -9,11 +9,31 @@ export type MagnoliaChapterId =
   | "installation"
   | "proof";
 
-export type VendorId = "eswindows" | "esmetals" | "lumabuilt" | "alucobond";
+export type VendorId = "es" | "esmetals" | "lumabuilt" | "alucobond" | "saint-gobain";
 
 export type SceneMetric = {
   label: string;
   value: string;
+};
+
+export type SceneType =
+  | "hero"
+  | "scope"
+  | "hotspot"
+  | "evidence"
+  | "finish"
+  | "gantt"
+  | "sequence"
+  | "proof"
+  | "reference";
+
+export type PresentationAppearance = "light" | "dark";
+export type PresentationTheme = "auto" | PresentationAppearance;
+
+export type SceneContext = {
+  eyebrow: string;
+  title: string;
+  facts: string[];
 };
 
 export type SceneEvidence = {
@@ -34,6 +54,15 @@ export type TechnicalDetail = {
   image: string;
   alt: string;
   callouts: string[];
+  sourceStatus?: "project-specific" | "reference-assembly";
+};
+
+export type ProductVisual = {
+  id: string;
+  title: string;
+  image: string;
+  alt: string;
+  sourceUrl: string;
 };
 
 export type FloorSequenceStep = {
@@ -63,6 +92,30 @@ export type Hotspot = {
   productId?: string;
   chapterIds: MagnoliaChapterId[];
   mediaKey?: string;
+  summary?: string;
+  metrics?: SceneMetric[];
+  focusScale?: number;
+};
+
+export type ReferenceProject = {
+  id: string;
+  name: string;
+  status: "pending" | "complete";
+  client?: string;
+  market: string;
+  location: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  image: string;
+  href?: string;
+  description: string;
+  scope: string;
+  productIds?: string[];
+  sourceType: "site" | "magnolia-pdf";
+  relevance: string;
+  metrics: SceneMetric[];
+  facts: string[];
 };
 
 export type PursuitChapter = {
@@ -93,9 +146,11 @@ export type SourceReference = {
 export type PursuitScene = {
   id: string;
   chapterId: MagnoliaChapterId;
+  type: SceneType;
+  preferredTheme: PresentationAppearance;
   eyebrow: string;
   title: string;
-  body: string;
+  lead: string;
   image: string;
   video?: string;
   durationMs?: number;
@@ -103,11 +158,17 @@ export type PursuitScene = {
   evidence: SceneEvidence[];
   sourcePageIds: string[];
   hotspotIds: string[];
+  productIds?: string[];
   presenterNote: PresenterNote;
+  context?: SceneContext;
   decisionIds?: string[];
-  technicalLayout?: "overview" | "single" | "triptych";
+  technicalLayout?: "overview" | "single" | "paired" | "triptych";
   technicalDetails?: TechnicalDetail[];
+  modelUrl?: string;
+  modelLabel?: string;
+  productVisuals?: ProductVisual[];
   floorSequence?: FloorSequenceStep[];
+  referenceProjects?: ReferenceProject[];
 };
 
 export type PursuitProject = {

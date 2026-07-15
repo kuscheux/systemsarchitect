@@ -14,7 +14,7 @@ export default async function PortalProjectsPage({ searchParams }: { searchParam
       <PortalPageHeader eyebrow="Project controls" title="Projects" description="Internal project records and the approved content path to the public website." action={<div className="flex flex-wrap gap-2"><Link href="/portal/projects/map" className={primaryButtonClass}><MapPinned size={15} /> Project map</Link>{canCreate ? <Link href="/portal/projects/new" className={primaryButtonClass}><Plus size={15} /> New project</Link> : null}</div>} />
       <form className="grid gap-3 border border-zinc-200 bg-white p-3 md:grid-cols-[1fr_180px_auto]">
         <label className="relative"><Search size={16} className="absolute left-3 top-3.5 text-zinc-400" /><input name="q" defaultValue={params.q} placeholder="Search name, client, or location" className={`${inputClass} pl-10`} /></label>
-        <select name="status" defaultValue={params.status || "all"} className={inputClass}><option value="all">All statuses</option><option value="active">Active</option><option value="on_hold">On hold</option><option value="complete">Complete</option><option value="archived">Archived</option></select>
+        <select name="status" defaultValue={params.status || "all"} className={inputClass}><option value="all">All statuses</option><option value="pending">Pending</option><option value="active">Active</option><option value="on_hold">On hold</option><option value="complete">Complete</option><option value="archived">Archived</option></select>
         <button className={primaryButtonClass}>Apply filters</button>
       </form>
 

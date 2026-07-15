@@ -3,6 +3,9 @@ import type {
   ApprovalItem,
   FabRequest,
   PortalProfile,
+  PortalCompany,
+  PortalCompanyContact,
+  PortalCompanySummary,
   PortalProject,
   ProjectAsset,
   PublishedProject,
@@ -48,12 +51,82 @@ export async function getProjectWorkspace(id: string) {
   throwQueryError(assets.error, "Project assets could not be loaded");
   throwQueryError(approvals.error, "Project approvals could not be loaded");
   throwQueryError(profiles.error, "Profiles could not be loaded");
+  const companyId = (project.data as PortalProject | null)?.company_id;
+  const company = companyId
+    ? await supabase.from("companies").select("*").eq("id", companyId).maybeSingle()
+    : { data: null, error: null };
+  throwQueryError(company.error, "Project company could not be loaded");
+  const companies = await supabase.from("companies").select("*").order("name");
+  throwQueryError(companies.error, "Companies could not be loaded");
   return {
     project: project.data as PortalProject | null,
     requests: (requests.data ?? []) as FabRequest[],
     assets: (assets.data ?? []) as ProjectAsset[],
     approvals: (approvals.data ?? []) as ApprovalItem[],
     profiles: (profiles.data ?? []) as PortalProfile[],
+    company: company.data as PortalCompany | null,
+    companies: (companies.data ?? []) as PortalCompany[],
+  };
+}
+
+export async function listCompanies() {
+  const supabase = await createClient();
+  const [companies, projects] = await Promise.all([
+    supabase.from("companies").select("*").order("name"),
+    supabase.from("projects").select("company_id"),
+  ]);
+  throwQueryError(companies.error, "Companies could not be loaded");
+  throwQueryError(projects.error, "Company projects could not be loaded");
+  const counts = new Map<string, number>();
+  for (const project of projects.data ?? []) {
+    if (!project.company_id) continue;
+    counts.set(project.company_id, (counts.get(project.company_id) ?? 0) + 1);
+  }
+  return (companies.data ?? []).map((company) => ({
+    ...(company as PortalCompany),
+    project_count: counts.get(company.id) ?? 0,
+  })) as PortalCompanySummary[];
+}
+
+export async function getCompanyWorkspace(id: string) {
+  const supabase = await createClient();
+  const [company, contacts, projects] = await Promise.all([
+    supabase.from("companies").select("*").eq("id", id).maybeSingle(),
+    supabase.from("company_contacts").select("*").eq("company_id", id).order("is_primary", { ascending: false }),
+    supabase.from("projects").select("*").eq("company_id", id).order("updated_at", { ascending: false }),
+  ]);
+  throwQueryError(company.error, "Company could not be loaded");
+  throwQueryError(contacts.error, "Company contacts could not be loaded");
+  throwQueryError(projects.error, "Company projects could not be loaded");
+
+  const companyProjects = (projects.data ?? []) as PortalProject[];
+  const projectIds = companyProjects.map((project) => project.id);
+  const assets = projectIds.length
+    ? await supabase.from("project_assets").select("*").in("project_id", projectIds).order("created_at", { ascending: false })
+    : { data: [], error: null };
+  throwQueryError(assets.error, "Company project assets could not be loaded");
+  const companyAssets = (assets.data ?? []) as ProjectAsset[];
+  const assetIds = companyAssets.map((asset) => asset.id);
+  const [projectApprovals, assetApprovals] = await Promise.all([
+    projectIds.length
+      ? supabase.from("approval_queue").select("*").in("entity_id", projectIds).order("created_at", { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
+    assetIds.length
+      ? supabase.from("approval_queue").select("*").in("entity_id", assetIds).order("created_at", { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+  throwQueryError(projectApprovals.error, "Company project approvals could not be loaded");
+  throwQueryError(assetApprovals.error, "Company asset approvals could not be loaded");
+
+  return {
+    company: company.data as PortalCompany | null,
+    contacts: (contacts.data ?? []) as PortalCompanyContact[],
+    projects: companyProjects,
+    assets: companyAssets,
+    approvals: [
+      ...((projectApprovals.data ?? []) as ApprovalItem[]),
+      ...((assetApprovals.data ?? []) as ApprovalItem[]),
+    ].sort((a, b) => b.created_at.localeCompare(a.created_at)),
   };
 }
 

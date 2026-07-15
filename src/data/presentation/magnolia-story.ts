@@ -1,9 +1,13 @@
 import type {
+  PresentationAppearance,
   PursuitChapter,
   PursuitScene,
+  SceneContext,
+  SceneType,
   SourceReference,
   TechnicalDetail,
 } from "@/data/pursuits/types";
+import { magnoliaReferenceProjects } from "@/data/presentation/magnolia-reference-projects";
 
 const sourceTitles = [
   "Magnolia Landing",
@@ -86,6 +90,29 @@ const slabEdgeDetails: TechnicalDetail[] = [
   },
 ];
 
+const anchorInterfaceDetails: TechnicalDetail[] = [
+  {
+    ...slabEdgeDetails[0],
+    id: "magnolia-slab-edge-interface",
+    title: "Magnolia office slab-edge interface",
+    sourceStatus: "project-specific",
+  },
+  {
+    id: "slab-shear-anchor-reference",
+    title: "Slab and shear anchor assembly",
+    sheet: "Reference assembly",
+    detail: "Detail 5.3",
+    image: "/images/magnolia/tko/details/slab-anchor-detail.png",
+    alt: "Detail 5.3 showing slab anchor and shear anchor assemblies with washers, anchors, and starter offsets",
+    sourceStatus: "reference-assembly",
+    callouts: [
+      "The slab anchor uses an anchor nut, stainless-steel washer, and washer extrusion at the horizontal starter.",
+      "The shear anchor transfers the condition vertically through an anchor, nut, stainless-steel washer, and washer extrusion.",
+      "The reference offsets identify 2 1/16 inches at the slab anchor and 2 inches at the shear anchor starter condition.",
+    ],
+  },
+];
+
 export const magnoliaChapters: PursuitChapter[] = [
   {
     id: "hero",
@@ -97,7 +124,7 @@ export const magnoliaChapters: PursuitChapter[] = [
   {
     id: "overview",
     title: "Overview",
-    subtitle: "One connected record",
+    subtitle: "One coordinated envelope",
     activeHotspotIds: ["curtain-wall", "acm", "v-groove"],
     panelTemplate: "overview",
   },
@@ -152,20 +179,22 @@ export const magnoliaChapters: PursuitChapter[] = [
   },
 ];
 
-export const magnoliaScenes: PursuitScene[] = [
+type MagnoliaSceneContent = Omit<PursuitScene, "type" | "preferredTheme">;
+
+const magnoliaSceneContent: MagnoliaSceneContent[] = [
   {
     id: "magnolia-landing",
     chapterId: "hero",
     eyebrow: "01 / Magnolia Landing / Charleston, South Carolina",
     title: "Magnolia Landing.",
-    body: "A connected exterior-envelope pursuit presented by 1CG and ES.",
+    lead: "Glazing, cladding, screening, entrances, and installation aligned around one Charleston exterior envelope.",
     image: "/images/magnolia/magnolia-rfp-rendering.webp",
     video: "/videos/brand/1cg-brand-anthem.mp4",
     durationMs: 216000,
     metrics: [
       { label: "Status", value: "Design Assist" },
       { label: "Package", value: "Exterior Envelope" },
-      { label: "Record", value: "Active Project Pin" },
+      { label: "Location", value: "Charleston, SC" },
     ],
     evidence: [],
     sourcePageIds: [sourceId(1), sourceId(2)],
@@ -173,7 +202,7 @@ export const magnoliaScenes: PursuitScene[] = [
     presenterNote: {
       lead: "Open with the project, not the product catalog.",
       talkingPoints: [
-        "Magnolia Landing is being treated as one connected envelope record.",
+        "Magnolia Landing is being treated as one coordinated exterior-envelope package.",
         "The presentation, decisions, systems, and delivery story stay together.",
       ],
     },
@@ -183,7 +212,7 @@ export const magnoliaScenes: PursuitScene[] = [
     chapterId: "overview",
     eyebrow: "02 / Project Definition",
     title: "One coordinated envelope.",
-    body: "Glazing, ACM, aluminum plank soffits, screening, entrances, logistics, and installation resolved as one delivery story.",
+    lead: "Glazing, ACM, aluminum plank soffits, screening, entrances, logistics, and installation resolved as one delivery story.",
     image: "/images/magnolia/02-east-elevation.png",
     durationMs: 9000,
     metrics: [
@@ -201,19 +230,28 @@ export const magnoliaScenes: PursuitScene[] = [
         "Every quantity and system remains part of the connected project record.",
       ],
     },
+    context: {
+      eyebrow: "Envelope interfaces",
+      title: "Five systems meet at the building edge.",
+      facts: [
+        "Curtain wall anchors resolve at the slab edge and spandrel zone.",
+        "ACM, soffit, screening, storefront, and entrances share perimeter transitions.",
+        "Fabrication and field sequencing follow the same six-level installation plan.",
+      ],
+    },
   },
   {
     id: "stronger-together",
     chapterId: "overview",
     eyebrow: "03 / Partnership",
     title: "Stronger Together.",
-    body: "1CG and ES align product engineering, preconstruction, fabrication, logistics, and field execution around one pursuit.",
+    lead: "1CG and ES align product engineering, preconstruction, fabrication, logistics, and field execution around one pursuit.",
     image: "/images/magnolia/03-west-elevation.png",
     durationMs: 8200,
     metrics: [
-      { label: "Trust", value: "One Record" },
-      { label: "Collaboration", value: "Shared Decisions" },
-      { label: "Results", value: "Field Ready" },
+      { label: "Engineering", value: "ES" },
+      { label: "Execution", value: "1CG" },
+      { label: "Delivery", value: "Field Ready" },
     ],
     evidence: [{ sourceId: sourceId(3), label: "1CG + ES partnership" }],
     sourcePageIds: [sourceId(3)],
@@ -227,11 +265,11 @@ export const magnoliaScenes: PursuitScene[] = [
     },
   },
   {
-    id: "live-pursuit",
+    id: "project-team",
     chapterId: "overview",
-    eyebrow: "04 / Active Project Record",
-    title: "A live pursuit, already pinned.",
-    body: "Location, team, scope, source documents, decisions, and stakeholder playback move together as the pursuit develops.",
+    eyebrow: "04 / Project Team",
+    title: "Designed here. Executed here.",
+    lead: "Highland Resources, Pickard Chilton, Cooper Carry, 1CG, and ES bring ownership, design, product engineering, fabrication, and field execution into one accountable team.",
     image: "/images/magnolia/03-west-elevation.png",
     durationMs: 8200,
     metrics: [
@@ -243,10 +281,19 @@ export const magnoliaScenes: PursuitScene[] = [
     sourcePageIds: [sourceId(5), sourceId(19)],
     hotspotIds: ["curtain-wall", "acm", "v-groove"],
     presenterNote: {
-      lead: "Demonstrate that the Project Pin is the pursuit record.",
+      lead: "Introduce the people and responsibilities behind the package.",
       talkingPoints: [
-        "The scene state, hotspots, and supporting evidence are connected.",
-        "The same structure can continue through award and completed-project publication.",
+        "The project team combines national design leadership with Charleston execution.",
+        "Each organization has a clear role from design assist through installation.",
+      ],
+    },
+    context: {
+      eyebrow: "Delivery structure",
+      title: "Clear roles before material release.",
+      facts: [
+        "Highland Resources leads ownership and development.",
+        "Pickard Chilton and Cooper Carry lead design and documentation.",
+        "1CG and ES align systems, procurement, fabrication, and installation.",
       ],
     },
   },
@@ -255,7 +302,7 @@ export const magnoliaScenes: PursuitScene[] = [
     chapterId: "glazing",
     eyebrow: "05 / Glazing Scope / RFP Set",
     title: "The glass scope is in the details.",
-    body: "Pickard Chilton sheet A6.01 assigns the office and garage slab-edge spandrel conditions to Glass Sub Scope. The material schedule then controls the glass, coating, frit, laminate, backpan, and finish at each condition.",
+    lead: "Pickard Chilton sheet A6.01 assigns the office and garage slab-edge spandrel conditions to Glass Sub Scope. The material schedule then controls the glass, coating, frit, laminate, backpan, and finish at each condition.",
     image: "/images/magnolia/tko/materials.webp",
     durationMs: 9000,
     metrics: [
@@ -281,7 +328,7 @@ export const magnoliaScenes: PursuitScene[] = [
     chapterId: "glazing",
     eyebrow: "06 / A6.01 / Detail 1",
     title: "Office slab edge, resolved.",
-    body: "The office section ties the GL-2 patterned spandrel, AL-1 exterior mullions, AL-6 fin, interior perimeter line, and Level 6 slab edge into one buildable curtain-wall condition.",
+    lead: "The office section ties the GL-2 patterned spandrel, AL-1 exterior mullions, AL-6 fin, interior perimeter line, and Level 6 slab edge into one buildable curtain-wall condition.",
     image: "/images/magnolia/tko/details/glass-spandrel.webp",
     durationMs: 9400,
     metrics: [
@@ -304,13 +351,53 @@ export const magnoliaScenes: PursuitScene[] = [
     },
     technicalLayout: "single",
     technicalDetails: [slabEdgeDetails[0]],
+    modelUrl: "/models/magnolia/gw-7000-typ-stack-joint.obj",
+    modelLabel: "GW-7000 typical stack joint",
+    productVisuals: [
+      {
+        id: "gw-7000-full-render",
+        title: "GW-7000 full assembly",
+        image: "/images/vendors/es/curtain-wall/gw-7000-full.png",
+        alt: "Official ES render of the complete GW-7000 unitized curtain-wall assembly",
+        sourceUrl: "https://eswindows.com/product/gw-7000/",
+      },
+    ],
+  },
+  {
+    id: "slab-edge-anchor-interface",
+    chapterId: "glazing",
+    eyebrow: "07 / Slab Edge / Anchor Interface",
+    title: "Slab edge cover, anchored.",
+    lead: "The Magnolia spandrel condition and the anchor reference resolve the load path, starter position, washers, offsets, mullion, fin, and slab-edge cover as one coordinated interface.",
+    image: "/images/magnolia/tko/details/slab-anchor-detail.png",
+    durationMs: 9800,
+    metrics: [
+      { label: "Project Detail", value: "A6.01 / Detail 1" },
+      { label: "Anchor Reference", value: "Detail 5.3" },
+      { label: "Interface", value: "Slab + Curtain Wall" },
+    ],
+    evidence: [
+      { sourceId: sourceId(12), label: "Magnolia glazing scope" },
+      { sourceId: sourceId(13), label: "Curtain-wall system reference" },
+    ],
+    sourcePageIds: [sourceId(12), sourceId(13)],
+    hotspotIds: ["curtain-wall"],
+    presenterNote: {
+      lead: "Separate the project-specific spandrel condition from the reference anchor assembly.",
+      talkingPoints: [
+        "A6.01 controls the Magnolia slab-edge geometry, GL-2 spandrel, AL-1 mullion, and AL-6 fin.",
+        "Detail 5.3 is presented as a reference assembly for the slab and shear anchor hardware, starter, washers, and offsets.",
+      ],
+    },
+    technicalLayout: "paired",
+    technicalDetails: anchorInterfaceDetails,
   },
   {
     id: "entrance-systems",
     chapterId: "glazing",
-    eyebrow: "07 / Stick Wall + Entrances",
-    title: "Every opening belongs to the system.",
-    body: "ES-7525, ES-46T, and ES-9000 are coordinated around glazing, hardware, thresholds, and adjacent curtain wall conditions.",
+    eyebrow: "08 / Stick Curtain Wall",
+    title: "Stick wall, fully resolved.",
+    lead: "The ES-7525 pressure-glazed curtain wall carries a 2-1/2 inch sight line and 7-1/2 inch mullion depth, with entrances coordinated through the same glazing package.",
     image: "/images/magnolia/02-east-elevation.png",
     durationMs: 9400,
     metrics: [
@@ -325,19 +412,46 @@ export const magnoliaScenes: PursuitScene[] = [
     sourcePageIds: [sourceId(14), sourceId(15)],
     hotspotIds: ["curtain-wall", "entrances"],
     presenterNote: {
-      lead: "Show how entrances remain inside the glazing coordination model.",
+      lead: "Use the official full frame and joint renders to explain the stick-built system before discussing entrance interfaces.",
       talkingPoints: [
         "Door hardware and thresholds are treated as interfaces, not late exceptions.",
         "System selection remains tied to performance and opening conditions.",
       ],
     },
+    technicalLayout: "paired",
+    technicalDetails: [
+      {
+        id: "es-7525-full-frame",
+        title: "ES-7525 full frame",
+        sheet: "ES product library",
+        detail: "Official full assembly render",
+        image: "/images/vendors/es/curtain-wall/es-7525-full.png",
+        alt: "Official ES render of the complete ES-7525 two-lite stick curtain-wall frame",
+        callouts: [
+          "The complete two-lite frame shows the pressure-glazed stick-built assembly as one system.",
+          "A 2-1/2 inch sight line and 7-1/2 inch mullion depth carry the vertical and horizontal grid.",
+        ],
+      },
+      {
+        id: "es-7525-joint",
+        title: "ES-7525 mullion and horizontal joint",
+        sheet: "ES product library",
+        detail: "Official joint render",
+        image: "/images/vendors/es/curtain-wall/es-7525-joint.png",
+        alt: "Official ES render of the ES-7525 mullion and horizontal joint",
+        callouts: [
+          "The joint render exposes the captured glazing, pressure plate, mullion, and horizontal relationship.",
+          "Outside glazing and shear-block construction support field assembly and adjacent entrance coordination.",
+        ],
+      },
+    ],
   },
   {
     id: "bullnose-clarity",
     chapterId: "glazing",
-    eyebrow: "08 / A6.01 / Spandrel Comparison",
+    eyebrow: "09 / A6.01 / Spandrel Comparison",
     title: "Three slab-edge conditions. One accountable scope.",
-    body: "The RFP resolves office glass spandrel, office metal-panel spandrel, and garage metal-panel spandrel as three distinct conditions within the glazing package.",
+    lead: "The RFP resolves office glass spandrel, office metal-panel spandrel, and garage metal-panel spandrel as three distinct conditions within the glazing package.",
     image: "/images/magnolia/tko/enclosure-details-01.webp",
     durationMs: 9400,
     metrics: [
@@ -364,9 +478,9 @@ export const magnoliaScenes: PursuitScene[] = [
   {
     id: "cladding-package",
     chapterId: "cladding",
-    eyebrow: "09 / Division 7",
+    eyebrow: "10 / Division 7",
     title: "One cladding package.",
-    body: "ACM, aluminum plank soffits, and garage screening move through one fabrication and installation strategy coordinated to the curtain wall sequence.",
+    lead: "ACM, aluminum plank soffits, and garage screening move through one fabrication and installation strategy coordinated to the curtain wall sequence.",
     image: "/images/magnolia/tko/materials.webp",
     durationMs: 9000,
     metrics: [
@@ -388,9 +502,9 @@ export const magnoliaScenes: PursuitScene[] = [
   {
     id: "v-groove-planks",
     chapterId: "cladding",
-    eyebrow: "10 / Aluminum Plank Soffit",
+    eyebrow: "11 / Aluminum Plank Soffit",
     title: "7,800 square feet. One woodgrain.",
-    body: "We will provide and install 7,800 square feet of LumaBuilt 6\" V-Groove Extruded Aluminum Planks in a single standard woodgrain finish.",
+    lead: "We will provide and install 7,800 square feet of LumaBuilt 6\" V-Groove Extruded Aluminum Planks in a single standard woodgrain finish.",
     image: "/images/magnolia/06-southwest-elevation.png",
     durationMs: 9800,
     metrics: [
@@ -413,9 +527,9 @@ export const magnoliaScenes: PursuitScene[] = [
   {
     id: "charleston-green-acm",
     chapterId: "cladding",
-    eyebrow: "11 / Aluminum Composite Material",
+    eyebrow: "12 / Aluminum Composite Material",
     title: "1,591 panels. One custom green.",
-    body: "We will fabricate and install 34,273 square feet of Alucobond 4mm ACM (Aluminum Composite Material) in 1,591 panels using a single custom Charleston Green.",
+    lead: "We will fabricate and install 34,273 square feet of Alucobond 4mm ACM (Aluminum Composite Material) in 1,591 panels using a single custom Charleston Green.",
     image: "/images/magnolia/05-south-elevation.png",
     durationMs: 10200,
     metrics: [
@@ -438,9 +552,9 @@ export const magnoliaScenes: PursuitScene[] = [
   {
     id: "garage-screening",
     chapterId: "screening",
-    eyebrow: "12 / Garage Screening",
+    eyebrow: "13 / Garage Screening",
     title: "12,500 square feet, purpose-built.",
-    body: "We will provide and install 12,500 square feet of perforated garage screening using ES Metals 3mm aluminum perforated panels with tube framing.",
+    lead: "We will provide and install 12,500 square feet of perforated garage screening using ES Metals 3mm aluminum perforated panels with tube framing.",
     image: "/images/magnolia/tko/wall-sections-garage.webp",
     durationMs: 10200,
     metrics: [
@@ -463,9 +577,9 @@ export const magnoliaScenes: PursuitScene[] = [
   {
     id: "screening-details",
     chapterId: "screening",
-    eyebrow: "13 / Engineered Screen Details",
+    eyebrow: "14 / Engineered Screen Details",
     title: "Every enclosure condition is mapped.",
-    body: "The RFP set tracks office, balcony, inset terrace, garage, penthouse, retail, bike room, service, loading dock, and parking enclosure families.",
+    lead: "The RFP set tracks office, balcony, inset terrace, garage, penthouse, retail, bike room, service, loading dock, and parking enclosure families.",
     image: "/images/magnolia/tko/enclosure-types.webp",
     durationMs: 9800,
     metrics: [
@@ -488,9 +602,9 @@ export const magnoliaScenes: PursuitScene[] = [
   {
     id: "woodgrain-matrix",
     chapterId: "materials",
-    eyebrow: "14 / Finish Evaluation",
+    eyebrow: "15 / Finish Evaluation",
     title: "The finish decision stays visible.",
-    body: "The complete LumaBuilt Mosaic matrix remains available while Magnolia advances with one controlled standard woodgrain selection.",
+    lead: "The complete LumaBuilt Mosaic matrix remains available while Magnolia advances with one controlled standard woodgrain selection.",
     image: "/images/magnolia/06-southwest-elevation.png",
     durationMs: 9400,
     metrics: [
@@ -513,9 +627,9 @@ export const magnoliaScenes: PursuitScene[] = [
   {
     id: "selected-palette",
     chapterId: "materials",
-    eyebrow: "15 / Selected Palette",
+    eyebrow: "16 / Selected Palette",
     title: "Two finishes. One architectural language.",
-    body: "Custom Charleston Green ACM and a single woodgrain aluminum plank finish define a controlled exterior palette across quantified scopes.",
+    lead: "Custom Charleston Green ACM and a single woodgrain aluminum plank finish define a controlled exterior palette across quantified scopes.",
     image: "/images/magnolia/05-south-elevation.png",
     durationMs: 9200,
     metrics: [
@@ -541,9 +655,9 @@ export const magnoliaScenes: PursuitScene[] = [
   {
     id: "factory-to-field",
     chapterId: "logistics",
-    eyebrow: "16 / Delivery Chain",
+    eyebrow: "17 / Delivery Chain",
     title: "Factory to field.",
-    body: "Production, crating, shipping, customs, transportation, and jobsite arrival remain visible as one coordinated line of sight.",
+    lead: "Production, crating, shipping, customs, transportation, and jobsite arrival remain visible as one coordinated line of sight.",
     image: "/images/magnolia/06-southwest-elevation.png",
     durationMs: 9400,
     metrics: [
@@ -565,9 +679,9 @@ export const magnoliaScenes: PursuitScene[] = [
   {
     id: "delivery-route",
     chapterId: "logistics",
-    eyebrow: "17 / Connected Logistics",
+    eyebrow: "18 / Connected Logistics",
     title: "Every handoff has a destination.",
-    body: "Factory release, port movement, trucking, floor staging, and field receipt are organized around the active Magnolia sequence.",
+    lead: "Factory release, port movement, trucking, floor staging, and field receipt are organized around Magnolia's installation sequence.",
     image: "/images/magnolia/01-southeast-oblique.png",
     durationMs: 9000,
     metrics: [
@@ -581,17 +695,17 @@ export const magnoliaScenes: PursuitScene[] = [
     presenterNote: {
       lead: "Show logistics as project information that stays connected to the pursuit.",
       talkingPoints: [
-        "The current record explains where material is coming from and how it reaches the work.",
-        "Future integrations can replace curated status with live operational milestones.",
+        "The route explains where material originates and how it reaches the work.",
+        "Release dates and floor staging protect the installation sequence from avoidable handling.",
       ],
     },
   },
   {
     id: "installation-schedule",
     chapterId: "installation",
-    eyebrow: "18 / Installation Schedule",
+    eyebrow: "19 / Installation Schedule",
     title: "The schedule is the strategy.",
-    body: "Design assist, award, submittals, procurement, floor installation, and punch move through one visible critical path.",
+    lead: "Design assist, award, submittals, procurement, floor installation, and punch move through one visible critical path.",
     image: "/images/magnolia/05-south-elevation.png",
     durationMs: 9800,
     metrics: [
@@ -613,9 +727,9 @@ export const magnoliaScenes: PursuitScene[] = [
   {
     id: "level-sequence",
     chapterId: "installation",
-    eyebrow: "19 / Field Execution",
+    eyebrow: "20 / Field Execution",
     title: "The first floor sets the rhythm.",
-    body: "Level 1 establishes the field sequence over 25 days. The same controlled logic then moves through Levels 2–6 at 15 days per floor.",
+    lead: "Level 1 establishes the field sequence over 25 days. The same controlled logic then moves through Levels 2–6 at 15 days per floor.",
     image: "/images/magnolia/magnolia-rfp-rendering.webp",
     durationMs: 9400,
     metrics: [
@@ -645,15 +759,15 @@ export const magnoliaScenes: PursuitScene[] = [
   {
     id: "quality-emr",
     chapterId: "proof",
-    eyebrow: "20 / Quality + Safety",
+    eyebrow: "21 / Quality + Safety",
     title: "Quality is a deliverable.",
-    body: "System performance, submittals, samples, mockups, fabrication checks, field verification, and documented safety remain part of the record.",
+    lead: "System performance, submittals, samples, mockups, fabrication checks, field verification, and documented safety remain accountable deliverables.",
     image: "/images/magnolia/01-southeast-oblique.png",
     durationMs: 9800,
     metrics: [
       { label: "Current EMR", value: "0.78" },
       { label: "Controls", value: "Documented QA/QC" },
-      { label: "Review", value: "Stakeholder Ready" },
+      { label: "Review", value: "Field Verified" },
     ],
     evidence: [{ sourceId: sourceId(18), label: "Experience modification ratings" }],
     sourcePageIds: [sourceId(18)],
@@ -661,7 +775,7 @@ export const magnoliaScenes: PursuitScene[] = [
     presenterNote: {
       lead: "Treat safety and quality records as project deliverables.",
       talkingPoints: [
-        "The current project record documents a 0.78 experience modification rate.",
+        "The current safety documentation identifies a 0.78 experience modification rate.",
         "QA/QC remains connected to the system and installation narrative.",
       ],
     },
@@ -669,9 +783,9 @@ export const magnoliaScenes: PursuitScene[] = [
   {
     id: "charleston-proof",
     chapterId: "proof",
-    eyebrow: "21 / Local Execution",
+    eyebrow: "22 / Local Execution",
     title: "Charleston proof. One accountable team.",
-    body: "Local offices, coastal performance, documented safety, and comparable execution support the team behind Magnolia Landing.",
+    lead: "Local offices, coastal performance, documented safety, and comparable execution support the team behind Magnolia Landing.",
     image: "/images/magnolia/06-southwest-elevation.png",
     durationMs: 9000,
     metrics: [
@@ -686,23 +800,22 @@ export const magnoliaScenes: PursuitScene[] = [
       lead: "Ground the pursuit in the team and offices supporting the work.",
       talkingPoints: [
         "Charleston provides local market context while Charlotte supports fabrication capacity.",
-        "The record closes the gap between presentation and accountable contacts.",
+        "Named offices and teams keep accountability close to the Charleston work.",
       ],
     },
   },
   {
     id: "comparable-work",
-    chapterId: "proof",
-    eyebrow: "22 / Comparable Charleston Work",
-    title: "The right proof is already in the room.",
-    body: "Waterfront Hotel, 22 WestEdge, and Morrison Yard provide direct context for hospitality, mixed-use, office, coastal systems, and execution scale.",
+    chapterId: "overview",
+    eyebrow: "02 / Charleston Portfolio",
+    title: "Charleston work, in context.",
+    lead: "Explore Magnolia Landing and 24 completed 1CG projects across Charleston, North Charleston, Mount Pleasant, Goose Creek, and Kiawah Island.",
     image: "/images/magnolia/02-east-elevation.png",
-    video: "/videos/magnolia/magnolia-timelapse.mp4",
     durationMs: 24000,
     metrics: [
-      { label: "Hospitality", value: "Waterfront Hotel" },
-      { label: "Mixed-Use", value: "22 WestEdge" },
-      { label: "Office", value: "Morrison Yard" },
+      { label: "Pending", value: "Magnolia Landing" },
+      { label: "Portfolio", value: "24 Complete" },
+      { label: "Coverage", value: "Charleston Metro" },
     ],
     evidence: [
       { sourceId: sourceId(20), label: "Waterfront Hotel" },
@@ -712,14 +825,122 @@ export const magnoliaScenes: PursuitScene[] = [
     sourcePageIds: [sourceId(20), sourceId(21), sourceId(22)],
     hotspotIds: [],
     presenterNote: {
-      lead: "Close with work that proves the team has executed comparable conditions.",
+      lead: "Use the map to connect Magnolia with the Charleston work already delivered by 1CG.",
       talkingPoints: [
-        "The references cover hospitality, mixed-use, and office work in Charleston.",
-        "Each project is presented through market, scope, execution scale, and relevant conditions.",
+        "Magnolia appears first as a pending pursuit at 2198 Milford Street.",
+        "Each completed project uses the existing portfolio record, image, scope, and route.",
+      ],
+    },
+    referenceProjects: magnoliaReferenceProjects,
+  },
+];
+
+type ScenePresentation = {
+  type: SceneType;
+  preferredTheme: PresentationAppearance;
+  context?: SceneContext;
+};
+
+const scenePresentation: Record<string, ScenePresentation> = {
+  "magnolia-landing": { type: "hero", preferredTheme: "dark" },
+  "coordinated-envelope": { type: "hotspot", preferredTheme: "dark" },
+  "stronger-together": {
+    type: "scope",
+    preferredTheme: "dark",
+    context: {
+      eyebrow: "Shared delivery",
+      title: "Product expertise meets local execution.",
+      facts: [
+        "ES supports product engineering and tested system performance.",
+        "1CG leads preconstruction, fabrication coordination, and field installation.",
+        "One release sequence aligns the building systems before they reach the jobsite.",
       ],
     },
   },
+  "project-team": { type: "scope", preferredTheme: "dark" },
+  "glazing-scope": { type: "evidence", preferredTheme: "light" },
+  "gw-7000-system": { type: "evidence", preferredTheme: "light" },
+  "slab-edge-anchor-interface": { type: "evidence", preferredTheme: "light" },
+  "entrance-systems": { type: "evidence", preferredTheme: "light" },
+  "bullnose-clarity": { type: "evidence", preferredTheme: "light" },
+  "cladding-package": {
+    type: "scope",
+    preferredTheme: "dark",
+    context: {
+      eyebrow: "Division 7",
+      title: "Three quantified systems, one field sequence.",
+      facts: [
+        "1,591 ACM panels establish the Charleston Green exterior field.",
+        "Woodgrain plank resolves balcony and soffit surfaces.",
+        "Perforated aluminum screening coordinates to garage structure and ventilation.",
+      ],
+    },
+  },
+  "v-groove-planks": { type: "finish", preferredTheme: "dark" },
+  "charleston-green-acm": { type: "finish", preferredTheme: "dark" },
+  "garage-screening": { type: "scope", preferredTheme: "dark" },
+  "screening-details": { type: "evidence", preferredTheme: "light" },
+  "woodgrain-matrix": { type: "finish", preferredTheme: "light" },
+  "selected-palette": { type: "finish", preferredTheme: "dark" },
+  "factory-to-field": { type: "sequence", preferredTheme: "dark" },
+  "delivery-route": { type: "sequence", preferredTheme: "dark" },
+  "installation-schedule": { type: "gantt", preferredTheme: "light" },
+  "level-sequence": { type: "sequence", preferredTheme: "dark" },
+  "quality-emr": { type: "proof", preferredTheme: "dark" },
+  "charleston-proof": { type: "proof", preferredTheme: "dark" },
+  "comparable-work": { type: "reference", preferredTheme: "light" },
+};
+
+const sceneProductIds: Record<string, string[]> = {
+  "magnolia-landing": [],
+  "coordinated-envelope": ["gw-7000", "es-7525", "es-46t", "es-9000", "alucobond-charleston-green", "lumabuilt-v-groove", "es-garage-screen"],
+  "stronger-together": ["gw-7000", "es-7525", "es-46t", "es-9000"],
+  "project-team": [],
+  "glazing-scope": ["gw-7000", "es-7525", "es-46t", "es-9000"],
+  "gw-7000-system": ["gw-7000"],
+  "slab-edge-anchor-interface": ["gw-7000"],
+  "entrance-systems": ["es-7525", "es-46t", "es-9000"],
+  "bullnose-clarity": ["gw-7000", "saint-gobain-lower-iron"],
+  "cladding-package": ["alucobond-charleston-green", "lumabuilt-v-groove", "es-garage-screen"],
+  "v-groove-planks": ["lumabuilt-v-groove"],
+  "charleston-green-acm": ["alucobond-charleston-green"],
+  "garage-screening": ["es-garage-screen"],
+  "screening-details": ["es-garage-screen"],
+  "woodgrain-matrix": ["lumabuilt-v-groove"],
+  "selected-palette": ["lumabuilt-v-groove", "alucobond-charleston-green"],
+  "factory-to-field": ["gw-7000", "es-7525", "es-46t", "es-9000"],
+  "delivery-route": ["gw-7000", "es-7525", "es-46t", "es-9000"],
+  "installation-schedule": ["gw-7000", "es-7525", "alucobond-charleston-green", "lumabuilt-v-groove", "es-garage-screen"],
+  "level-sequence": ["gw-7000", "es-7525"],
+  "quality-emr": ["gw-7000", "es-7525", "es-46t", "es-9000"],
+  "charleston-proof": [],
+  "comparable-work": ["gw-7000", "es-7525", "es-46t", "es-9000", "alucobond-charleston-green", "lumabuilt-v-groove", "es-garage-screen"],
+};
+
+const orderedSceneContent = [
+  magnoliaSceneContent.find((scene) => scene.id === "magnolia-landing")!,
+  magnoliaSceneContent.find((scene) => scene.id === "coordinated-envelope")!,
+  magnoliaSceneContent.find((scene) => scene.id === "installation-schedule")!,
+  magnoliaSceneContent.find((scene) => scene.id === "comparable-work")!,
+  ...magnoliaSceneContent.filter(
+    (scene) =>
+      scene.id !== "magnolia-landing" &&
+      scene.id !== "coordinated-envelope" &&
+      scene.id !== "installation-schedule" &&
+      scene.id !== "comparable-work",
+  ),
 ];
+
+export const magnoliaScenes: PursuitScene[] = orderedSceneContent.map((scene, index) => {
+  const presentation = scenePresentation[scene.id];
+  if (!presentation) throw new Error(`Missing Magnolia scene presentation metadata for ${scene.id}`);
+  return {
+    ...scene,
+    ...presentation,
+    eyebrow: scene.eyebrow.replace(/^\d+\s*\/\s*/, `${String(index + 1).padStart(2, "0")} / `),
+    productIds: sceneProductIds[scene.id] ?? [],
+  };
+});
 
 export const chapterFirstSceneIndex = magnoliaChapters.reduce<
   Record<string, number>

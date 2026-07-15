@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { MagnoliaPresentationPlayer } from "./magnolia-presentation-player";
 
 export const metadata: Metadata = {
-  title: "Magnolia Landing Project Pin | 1CG",
+  title: "Magnolia Landing Exterior Envelope | 1CG",
   description:
-    "A full-screen Project Pins presentation for Magnolia Landing's exterior envelope scope.",
+    "A full-screen presentation of Magnolia Landing's coordinated glazing, cladding, screening, logistics, and installation scope.",
 };
 
 export default function MagnoliaProjectPinPage() {

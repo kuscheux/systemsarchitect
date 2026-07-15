@@ -67,6 +67,7 @@ export async function createProjectAction(formData: FormData) {
     .insert({
       name,
       slug,
+      company_id: text(formData, "company_id") || null,
       client_name: text(formData, "client_name"),
       location: text(formData, "location"),
       market: text(formData, "market"),
@@ -93,6 +94,7 @@ export async function updateProjectAction(projectId: string, formData: FormData)
     ? { public_description: text(formData, "public_description") }
     : {
         name: required(formData, "name", "Project name"),
+        company_id: text(formData, "company_id") || null,
         client_name: text(formData, "client_name"),
         location: text(formData, "location"),
         market: text(formData, "market"),
