@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { blinds } from "motion-plus/curtains";
-import { useCurtains } from "motion-plus/react";
 import { ArrowLeft, Monitor, Moon, PanelRightOpen, Play, Sun } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PresentationControls } from "@/components/pursuits/presentation-controls";
@@ -22,7 +20,6 @@ import { magnoliaVendorProducts } from "@/data/vendors";
 const CONTROLS_IDLE_MS = 2000;
 
 export function MagnoliaPresentationPlayer() {
-  const [curtains, isTransitioning] = useCurtains();
   const stageRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const controlsTimerRef = useRef<number | null>(null);
@@ -103,29 +100,13 @@ export function MagnoliaPresentationPlayer() {
     setControlsVisible(true);
   }, []);
 
-  const goTo = useCallback(
-    (next: number) => {
-      if (isTransitioning) return;
-      const normalized = (next + magnoliaScenes.length) % magnoliaScenes.length;
-      const scope = stageRef.current;
-      setActiveHotspotId(null);
-      setSelectedReferenceId(null);
-      setDrawerOpen(false);
-
-      if (!scope) {
-        setIndex(normalized);
-        return;
-      }
-
-      const slatSize = Math.max(56, Math.min(92, Math.round(scope.clientHeight / 9)));
-      void curtains(() => setIndex(normalized), {
-        effect: blinds({ direction: "row", directionMode: "normal", size: slatSize }),
-        transition: [{ duration: 0.28 }, { duration: 0.34 }],
-        scope,
-      });
-    },
-    [curtains, isTransitioning],
-  );
+  const goTo = useCallback((next: number) => {
+    const normalized = (next + magnoliaScenes.length) % magnoliaScenes.length;
+    setActiveHotspotId(null);
+    setSelectedReferenceId(null);
+    setDrawerOpen(false);
+    setIndex(normalized);
+  }, []);
 
   const requestFullscreen = useCallback(async () => {
     try {
@@ -322,7 +303,7 @@ export function MagnoliaPresentationPlayer() {
             canPlayVideo={Boolean(current.video)}
             isMuted={isMuted}
             isFullscreen={isFullscreen}
-            disabled={isTransitioning}
+            disabled={false}
             onPrevious={() => goTo(index - 1)}
             onNext={() => goTo(index + 1)}
             onTogglePlayback={togglePlayback}
