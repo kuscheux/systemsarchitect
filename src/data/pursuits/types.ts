@@ -23,6 +23,7 @@ export type SceneType =
   | "evidence"
   | "finish"
   | "gantt"
+  | "model"
   | "sequence"
   | "proof"
   | "reference";

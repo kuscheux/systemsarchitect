@@ -29,6 +29,7 @@ import {
 import { FloorSequenceStage } from "@/components/pursuits/floor-sequence-stage";
 import { HotspotLayer } from "@/components/pursuits/hotspot-layer";
 import { InstallationGanttScene } from "@/components/pursuits/installation-gantt-scene";
+import { ObjModelViewer } from "@/components/pursuits/obj-model-viewer";
 import { TechnicalSceneStage } from "@/components/pursuits/technical-scene-stage";
 import { magnoliaVendorProducts } from "@/data/vendors";
 import type {
@@ -217,6 +218,25 @@ export function SequenceScene(props: Omit<NarrativeSceneProps, "variant">) {
 
 export function EvidenceScene({ scene, appearance }: Pick<SceneRendererProps, "scene" | "appearance">) {
   return <TechnicalSceneStage scene={scene} appearance={appearance} />;
+}
+
+export function ModelScene({ scene }: Pick<SceneRendererProps, "scene">) {
+  if (!scene.modelUrl) return null;
+  return (
+    <section className="absolute inset-0 grid min-h-0 grid-cols-1 bg-[#f2f2ef] px-5 pb-20 pt-20 text-black sm:px-8 lg:grid-cols-[minmax(280px,0.38fr)_minmax(0,1fr)] lg:gap-10 lg:px-12 lg:pb-24 lg:pt-24">
+      <div className="flex min-h-0 flex-col py-2 lg:py-5">
+        <SceneEyebrow>{scene.eyebrow}</SceneEyebrow>
+        <h1 className="mt-4 max-w-2xl text-balance text-[clamp(3rem,6vw,7.5rem)] font-semibold leading-[0.9] tracking-normal">
+          {scene.title}
+        </h1>
+        <p className="mt-5 max-w-xl text-sm leading-6 text-black/62 lg:text-base lg:leading-7">{scene.lead}</p>
+        <MetricRow scene={scene} />
+      </div>
+      <div className="min-h-[360px] lg:min-h-0">
+        <ObjModelViewer src={scene.modelUrl} label={scene.modelLabel ?? scene.title} />
+      </div>
+    </section>
+  );
 }
 
 export function HotspotScene({
@@ -602,6 +622,7 @@ export function SceneRenderer(props: SceneRendererProps) {
     case "evidence": return <EvidenceScene scene={props.scene} appearance={props.appearance} />;
     case "finish": return <FinishScene {...common} />;
     case "gantt": return <InstallationGanttScene scene={props.scene} />;
+    case "model": return <ModelScene scene={props.scene} />;
     case "sequence": return <SequenceScene {...common} />;
     case "proof": return <ProofScene {...common} />;
     case "reference": return <ReferenceScene scene={props.scene} appearance={props.appearance} selectedReferenceId={props.selectedReferenceId} onSelectReference={props.onSelectReference} interactionPaused={props.interactionPaused} />;

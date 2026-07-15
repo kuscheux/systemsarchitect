@@ -113,6 +113,37 @@ const anchorInterfaceDetails: TechnicalDetail[] = [
   },
 ];
 
+const glazingCoordinationDetails: TechnicalDetail[] = [
+  {
+    id: "slab-edge-3d-interface",
+    title: "Spandrel-to-slab interface",
+    sheet: "Coordination model",
+    detail: "3D interface study",
+    image: "/images/magnolia/tko/details/slab-edge-3d-interface.webp",
+    alt: "Three-dimensional coordination view of curtain-wall framing, slab edge, anchor bracket, and horizontal cover geometry",
+    sourceStatus: "project-specific",
+    callouts: [
+      "The curtain-wall vertical, horizontal cover, slab edge, and attachment bracket are resolved in one coordination view.",
+      "The model exposes the concealed anchor relationship that cannot be read clearly from the elevation alone.",
+      "Color separation identifies each trade interface before fabrication release.",
+    ],
+  },
+  {
+    id: "slab-edge-3d-anchor",
+    title: "Twin-anchor stack joint",
+    sheet: "Coordination model",
+    detail: "3D anchor study",
+    image: "/images/magnolia/tko/details/slab-edge-3d-anchor.webp",
+    alt: "Three-dimensional coordination view of a twin-anchor curtain-wall stack joint at the slab edge",
+    sourceStatus: "project-specific",
+    callouts: [
+      "Twin vertical anchor brackets connect the mullion condition to the slab-mounted anchor plate.",
+      "The stack joint and horizontal members remain visible above the attachment hardware.",
+      "The view verifies fastener access, bracket spacing, and the slab-edge interface before installation.",
+    ],
+  },
+];
+
 export const magnoliaChapters: PursuitChapter[] = [
   {
     id: "hero",
@@ -246,7 +277,7 @@ const magnoliaSceneContent: MagnoliaSceneContent[] = [
     eyebrow: "03 / Partnership",
     title: "Stronger Together.",
     lead: "1CG and ES align product engineering, preconstruction, fabrication, logistics, and field execution around one pursuit.",
-    image: "/images/magnolia/03-west-elevation.png",
+    image: "/images/magnolia/magnolia-logistics-ship.webp",
     durationMs: 8200,
     metrics: [
       { label: "Engineering", value: "ES" },
@@ -320,14 +351,14 @@ const magnoliaSceneContent: MagnoliaSceneContent[] = [
         "A0.02 schedules GL-1 through GL-5, including patterned vision, spandrel, small-missile, and Level 1 large-missile conditions.",
       ],
     },
-    technicalLayout: "overview",
-    technicalDetails: slabEdgeDetails,
+    technicalLayout: "paired",
+    technicalDetails: glazingCoordinationDetails,
   },
   {
     id: "gw-7000-system",
     chapterId: "glazing",
     eyebrow: "06 / A6.01 / Detail 1",
-    title: "Office slab edge, resolved.",
+    title: "GW-7000 curtain wall.",
     lead: "The office section ties the GL-2 patterned spandrel, AL-1 exterior mullions, AL-6 fin, interior perimeter line, and Level 6 slab edge into one buildable curtain-wall condition.",
     image: "/images/magnolia/tko/details/glass-spandrel.webp",
     durationMs: 9400,
@@ -351,8 +382,6 @@ const magnoliaSceneContent: MagnoliaSceneContent[] = [
     },
     technicalLayout: "single",
     technicalDetails: [slabEdgeDetails[0]],
-    modelUrl: "/models/magnolia/gw-7000-typ-stack-joint.obj",
-    modelLabel: "GW-7000 typical stack joint",
     productVisuals: [
       {
         id: "gw-7000-full-render",
@@ -362,6 +391,32 @@ const magnoliaSceneContent: MagnoliaSceneContent[] = [
         sourceUrl: "https://eswindows.com/product/gw-7000/",
       },
     ],
+  },
+  {
+    id: "gw-7000-cad",
+    chapterId: "glazing",
+    eyebrow: "07 / Interactive CAD / GW-7000",
+    title: "Interactive CAD details.",
+    lead: "Rotate, zoom, and inspect the GW-7000 typical stack-joint geometry as a centered, material-neutral coordination model.",
+    image: "/images/magnolia/tko/details/glass-spandrel.webp",
+    durationMs: 12000,
+    metrics: [
+      { label: "System", value: "GW-7000" },
+      { label: "Detail", value: "Stack Joint" },
+      { label: "Review", value: "Rotate + Zoom" },
+    ],
+    evidence: [{ sourceId: sourceId(13), label: "GW-7000 system" }],
+    sourcePageIds: [sourceId(13), sourceId(15)],
+    hotspotIds: ["curtain-wall"],
+    presenterNote: {
+      lead: "Use the model to review geometry and interfaces, not as a substitute for the approved shop drawing.",
+      talkingPoints: [
+        "The neutral material keeps the discussion focused on profile geometry and stack-joint relationships.",
+        "The model can be paused and inspected from any angle during coordination review.",
+      ],
+    },
+    modelUrl: "/models/magnolia/gw-7000-typ-stack-joint.obj",
+    modelLabel: "GW-7000 typical stack joint",
   },
   {
     id: "slab-edge-anchor-interface",
@@ -395,9 +450,9 @@ const magnoliaSceneContent: MagnoliaSceneContent[] = [
   {
     id: "entrance-systems",
     chapterId: "glazing",
-    eyebrow: "08 / Stick Curtain Wall",
-    title: "Stick wall, fully resolved.",
-    lead: "The ES-7525 pressure-glazed curtain wall carries a 2-1/2 inch sight line and 7-1/2 inch mullion depth, with entrances coordinated through the same glazing package.",
+    eyebrow: "10 / Commercial Entrances",
+    title: "Commercial entrance systems.",
+    lead: "ES-46T outswing and ES-9000 entrance systems coordinate thresholds, hardware, waterproofing, and adjacent ES-7525 framing as one complete opening package.",
     image: "/images/magnolia/02-east-elevation.png",
     durationMs: 9400,
     metrics: [
@@ -503,13 +558,13 @@ const magnoliaSceneContent: MagnoliaSceneContent[] = [
     id: "v-groove-planks",
     chapterId: "cladding",
     eyebrow: "11 / Aluminum Plank Soffit",
-    title: "7,800 square feet. One woodgrain.",
+    title: "7,800 SF of 6\" V-Plank.",
     lead: "We will provide and install 7,800 square feet of LumaBuilt 6\" V-Groove Extruded Aluminum Planks in a single standard woodgrain finish.",
-    image: "/images/magnolia/06-southwest-elevation.png",
+    image: "/images/magnolia/v-plank-terrace.webp",
     durationMs: 9800,
     metrics: [
       { label: "Area", value: "7,800 SF" },
-      { label: "Profile", value: "6 in. V-Groove" },
+      { label: "Profile", value: "6 in. V-Plank" },
       { label: "Finish", value: "One Woodgrain" },
     ],
     evidence: [{ sourceId: sourceId(8), label: "V-Groove product detail" }],
@@ -553,9 +608,9 @@ const magnoliaSceneContent: MagnoliaSceneContent[] = [
     id: "garage-screening",
     chapterId: "screening",
     eyebrow: "13 / Garage Screening",
-    title: "12,500 square feet, purpose-built.",
-    lead: "We will provide and install 12,500 square feet of perforated garage screening using ES 3mm aluminum perforated panels with tube framing.",
-    image: "/images/magnolia/tko/wall-sections-garage.webp",
+    title: "12,500 SF of ES Metals screening.",
+    lead: "We will provide and install 12,500 square feet of perforated garage screening using ES Metals 3mm aluminum perforated panels with tube framing.",
+    image: "/images/magnolia/es-metals-screening.webp",
     durationMs: 10200,
     metrics: [
       { label: "Area", value: "12,500 SF" },
@@ -580,7 +635,8 @@ const magnoliaSceneContent: MagnoliaSceneContent[] = [
     eyebrow: "14 / Engineered Screen Details",
     title: "Every enclosure condition is mapped.",
     lead: "The RFP set tracks office, balcony, inset terrace, garage, penthouse, retail, bike room, service, loading dock, and parking enclosure families.",
-    image: "/images/magnolia/tko/enclosure-types.webp",
+    image: "/videos/magnolia/magnolia-timelapse-cover.jpg",
+    video: "/videos/magnolia/magnolia-timelapse.mp4",
     durationMs: 9800,
     metrics: [
       { label: "Office / Terrace", value: "A1-A4" },
@@ -860,8 +916,21 @@ const scenePresentation: Record<string, ScenePresentation> = {
   "project-team": { type: "scope", preferredTheme: "dark" },
   "glazing-scope": { type: "evidence", preferredTheme: "light" },
   "gw-7000-system": { type: "evidence", preferredTheme: "light" },
+  "gw-7000-cad": { type: "model", preferredTheme: "light" },
   "slab-edge-anchor-interface": { type: "evidence", preferredTheme: "light" },
-  "entrance-systems": { type: "evidence", preferredTheme: "light" },
+  "entrance-systems": {
+    type: "scope",
+    preferredTheme: "dark",
+    context: {
+      eyebrow: "Opening package",
+      title: "Door systems are coordinated before release.",
+      facts: [
+        "ES-46T provides the impact-rated thermally broken outswing condition.",
+        "ES-9000 provides the impact-rated commercial entrance condition with ADA threshold options.",
+        "Frames, thresholds, hardware, sealants, and adjacent ES-7525 glazing remain one coordinated interface.",
+      ],
+    },
+  },
   "bullnose-clarity": { type: "evidence", preferredTheme: "light" },
   "cladding-package": {
     type: "scope",
@@ -879,7 +948,7 @@ const scenePresentation: Record<string, ScenePresentation> = {
   "v-groove-planks": { type: "finish", preferredTheme: "dark" },
   "charleston-green-acm": { type: "finish", preferredTheme: "dark" },
   "garage-screening": { type: "scope", preferredTheme: "dark" },
-  "screening-details": { type: "evidence", preferredTheme: "light" },
+  "screening-details": { type: "sequence", preferredTheme: "dark" },
   "woodgrain-matrix": { type: "finish", preferredTheme: "light" },
   "selected-palette": { type: "finish", preferredTheme: "dark" },
   "factory-to-field": { type: "sequence", preferredTheme: "dark" },
@@ -898,6 +967,7 @@ const sceneProductIds: Record<string, string[]> = {
   "project-team": [],
   "glazing-scope": ["gw-7000", "es-7525", "es-46t", "es-9000"],
   "gw-7000-system": ["gw-7000"],
+  "gw-7000-cad": ["gw-7000"],
   "slab-edge-anchor-interface": ["gw-7000"],
   "entrance-systems": ["es-7525", "es-46t", "es-9000"],
   "bullnose-clarity": ["gw-7000", "saint-gobain-lower-iron"],
@@ -928,6 +998,12 @@ const orderedSceneContent = [
       scene.id !== "coordinated-envelope" &&
       scene.id !== "installation-schedule" &&
       scene.id !== "comparable-work",
+  ).flatMap((scene) =>
+    scene.id === "gw-7000-system"
+      ? [scene, magnoliaSceneContent.find((candidate) => candidate.id === "gw-7000-cad")!]
+      : scene.id === "gw-7000-cad"
+        ? []
+        : [scene],
   ),
 ];
 

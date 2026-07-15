@@ -265,14 +265,17 @@ export function MagnoliaPresentationPlayer() {
           }}
         />
 
+        <div className="pointer-events-none absolute left-3 top-3 z-[60] sm:left-5 sm:top-5 lg:left-6 lg:top-6">
+          <PursuitBrandLockup appearance={appearance} />
+        </div>
+
         <header
-          className={`absolute inset-x-0 top-0 z-50 flex items-start justify-between gap-3 p-3 transition-opacity duration-300 sm:p-5 lg:p-6 ${
+          className={`absolute inset-x-0 top-0 z-50 flex items-start justify-end gap-3 p-3 transition-opacity duration-300 sm:p-5 lg:p-6 ${
             controlsVisible || drawerOpen
               ? "opacity-100"
               : "pointer-events-none opacity-0"
           }`}
         >
-          <PursuitBrandLockup appearance={appearance} />
           <div className="flex items-center gap-2">
             <Link
               href="/project-pins"

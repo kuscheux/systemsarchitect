@@ -100,6 +100,17 @@ function SingleDetail({ scene, detail }: { scene: PursuitScene; detail: Technica
             </figcaption>
           </figure>
         </div>
+      ) : productVisual ? (
+        <div className="grid min-h-0 gap-3 md:grid-cols-2">
+          <ProductRender visual={productVisual} />
+          <figure className="relative min-h-0 overflow-hidden border border-black/12 bg-white">
+            <Image src={detail.image} alt={detail.alt} fill priority sizes="(min-width: 1024px) 31vw, 100vw" className="object-contain" />
+            <figcaption className="absolute inset-x-0 bottom-0 bg-white/94 px-4 pb-3 pt-3 backdrop-blur-sm">
+              <p className="text-xs font-semibold text-black">{detail.title}</p>
+              <DetailReference detail={detail} />
+            </figcaption>
+          </figure>
+        </div>
       ) : (
         <figure className="relative min-h-0 overflow-hidden border border-black/12 bg-white">
           <Image src={detail.image} alt={detail.alt} fill priority sizes="(min-width: 1024px) 62vw, 100vw" className="object-contain" />

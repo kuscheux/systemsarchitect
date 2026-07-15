@@ -48,8 +48,8 @@ export function ObjModelViewer({ src, label }: ObjModelViewerProps) {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf7f7f5);
 
-    const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 100);
-    camera.position.set(8, 5.4, 10.5);
+    const camera = new THREE.PerspectiveCamera(32, 1, 0.01, 100);
+    camera.position.set(6, 3.5, 8);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -77,21 +77,20 @@ export function ObjModelViewer({ src, label }: ObjModelViewerProps) {
     fillLight.position.set(-6, 2, -5);
     scene.add(fillLight);
 
-    const ground = new THREE.GridHelper(12, 24, 0xc5c9cc, 0xe1e3e4);
-    ground.position.y = -2.5;
+    const ground = new THREE.GridHelper(12, 24, 0xc8cbcd, 0xe4e5e5);
+    ground.position.y = -2.2;
     const gridMaterials = Array.isArray(ground.material) ? ground.material : [ground.material];
     gridMaterials.forEach((material) => {
       material.transparent = true;
-      material.opacity = 0.38;
+      material.opacity = 0.22;
     });
     scene.add(ground);
 
-    const modelMaterial = new THREE.MeshBasicMaterial({
-      color: 0x111820,
+    const modelMaterial = new THREE.MeshStandardMaterial({
+      color: 0x8a8f93,
       side: THREE.DoubleSide,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.82,
+      metalness: 0.48,
+      roughness: 0.42,
     });
 
     const loader = new OBJLoader();
@@ -99,31 +98,22 @@ export function ObjModelViewer({ src, label }: ObjModelViewerProps) {
       src,
       (object) => {
         if (disposed) return;
-        const vertexCenter = new THREE.Vector3();
-        let vertexCount = 0;
         object.traverse((child) => {
           if (!(child instanceof THREE.Mesh)) return;
           child.geometry.computeVertexNormals();
           child.material = modelMaterial;
           child.frustumCulled = false;
-          const positions = child.geometry.getAttribute("position");
-          for (let index = 0; index < positions.count; index += 1) {
-            vertexCenter.x += positions.getX(index);
-            vertexCenter.y += positions.getY(index);
-            vertexCenter.z += positions.getZ(index);
-          }
-          vertexCount += positions.count;
         });
 
         const initialBox = new THREE.Box3().setFromObject(object);
+        const initialCenter = initialBox.getCenter(new THREE.Vector3());
         const initialSize = initialBox.getSize(new THREE.Vector3());
         const maxDimension = Math.max(initialSize.x, initialSize.y, initialSize.z) || 1;
         const modelScale = 4.3 / maxDimension;
         object.scale.setScalar(modelScale);
-        if (vertexCount > 0) vertexCenter.divideScalar(vertexCount);
-        object.position.copy(vertexCenter).multiplyScalar(-modelScale);
+        object.position.copy(initialCenter).multiplyScalar(-modelScale);
         const modelPivot = new THREE.Group();
-        modelPivot.rotation.set(-0.16, -0.55, 0.08);
+        modelPivot.rotation.set(0, -0.42, 0);
         modelPivot.add(object);
         scene.add(modelPivot);
 
@@ -132,15 +122,11 @@ export function ObjModelViewer({ src, label }: ObjModelViewerProps) {
         const radius = Math.max(fittedSphere.radius, 1);
         camera.near = radius / 100;
         camera.far = radius * 100;
-        camera.position.set(
-          radius * 5,
-          radius * 3,
-          radius * 6,
-        );
+        camera.position.set(radius * 2.35, radius * 1.35, radius * 3.15);
         camera.updateProjectionMatrix();
         controls.target.set(0, 0, 0);
-        controls.minDistance = radius * 1.25;
-        controls.maxDistance = radius * 12;
+        controls.minDistance = radius * 1.1;
+        controls.maxDistance = radius * 7;
         controls.update();
         controls.saveState();
         setIsLoading(false);

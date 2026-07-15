@@ -54,8 +54,8 @@ export const magnoliaDecisions: ProjectDecision[] = [
 export const magnoliaHotspots: Hotspot[] = [
   {
     id: "curtain-wall",
-    xPct: 64,
-    yPct: 39,
+    xPct: 68,
+    yPct: 34,
     label: "Curtain wall",
     productId: "gw-7000",
     chapterIds: ["overview", "glazing"],
@@ -70,8 +70,8 @@ export const magnoliaHotspots: Hotspot[] = [
   },
   {
     id: "entrances",
-    xPct: 57,
-    yPct: 72,
+    xPct: 87,
+    yPct: 80,
     label: "Entrances",
     productId: "es-9000",
     chapterIds: ["glazing"],
@@ -86,8 +86,8 @@ export const magnoliaHotspots: Hotspot[] = [
   },
   {
     id: "acm",
-    xPct: 33,
-    yPct: 33,
+    xPct: 73,
+    yPct: 55,
     label: "Charleston Green ACM",
     productId: "alucobond-charleston-green",
     chapterIds: ["cladding", "materials"],
@@ -102,8 +102,8 @@ export const magnoliaHotspots: Hotspot[] = [
   },
   {
     id: "v-groove",
-    xPct: 72,
-    yPct: 25,
+    xPct: 85,
+    yPct: 68,
     label: "Woodgrain soffit",
     productId: "lumabuilt-v-groove",
     chapterIds: ["cladding", "materials"],
@@ -118,8 +118,8 @@ export const magnoliaHotspots: Hotspot[] = [
   },
   {
     id: "garage-screen",
-    xPct: 43,
-    yPct: 62,
+    xPct: 50,
+    yPct: 66,
     label: "Garage screening",
     productId: "es-garage-screen",
     chapterIds: ["screening"],
