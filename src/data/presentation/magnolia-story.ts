@@ -554,7 +554,7 @@ const magnoliaSceneContent: MagnoliaSceneContent[] = [
     chapterId: "screening",
     eyebrow: "13 / Garage Screening",
     title: "12,500 square feet, purpose-built.",
-    lead: "We will provide and install 12,500 square feet of perforated garage screening using ES Metals 3mm aluminum perforated panels with tube framing.",
+    lead: "We will provide and install 12,500 square feet of perforated garage screening using ES 3mm aluminum perforated panels with tube framing.",
     image: "/images/magnolia/tko/wall-sections-garage.webp",
     durationMs: 10200,
     metrics: [

@@ -100,7 +100,7 @@ export const magnoliaSlideRecords: MagnoliaSlideRecord[] = [
     title: "Cladding Quantities",
     chapter: "Cladding",
     concept: "Quantified package scope",
-    extractedText: ["34,273 SF of ALUCOBOND 4mm ACM in 1,591 panels using one custom Charleston Green.", "7,800 SF of LumaBuilt 6-inch V-Groove extruded aluminum planks using one standard woodgrain finish.", "12,500 SF of perforated garage screening using ES Metals 3mm aluminum perforated panels with tube framing."],
+    extractedText: ["34,273 SF of ALUCOBOND 4mm ACM in 1,591 panels using one custom Charleston Green.", "7,800 SF of LumaBuilt 6-inch V-Groove extruded aluminum planks using one standard woodgrain finish.", "12,500 SF of perforated garage screening using ES 3mm aluminum perforated panels with tube framing."],
     productIds: ["alucobond-charleston-green", "lumabuilt-v-groove", "es-garage-screen"], sourceIds: [deck], assetIds: [],
   },
   {

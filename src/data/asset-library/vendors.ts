@@ -13,7 +13,7 @@ export const assetLibraryVendors: AssetLibraryVendor[] = [
   },
   {
     id: "esmetals",
-    name: "ES Metals",
+    name: "ES",
     website: "https://esmetals.com/",
     summary: "Custom architectural metal systems and perforated screening assemblies.",
   },

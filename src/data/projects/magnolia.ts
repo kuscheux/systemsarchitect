@@ -45,7 +45,7 @@ export const magnoliaDecisions: ProjectDecision[] = [
     id: "screen-system",
     type: "system",
     title: "Garage screening",
-    selectedValue: "ES Metals 3mm perforated aluminum with tube framing",
+    selectedValue: "ES 3mm perforated aluminum with tube framing",
     rationale: "Ventilation, durability, and a purpose-engineered architectural screen condition.",
     source: "deck",
   },

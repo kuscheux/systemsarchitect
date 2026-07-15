@@ -118,7 +118,7 @@ const magnoliaLanding: ReferenceProject = {
   description:
     "A pending Charleston pursuit coordinating glazing, cladding, soffits, garage screening, entrances, logistics, and installation.",
   scope:
-    "GW-7000, ES-7525, ES-46T, ES-9000, 4mm ALUCOBOND ACM, 6-inch LumaBuilt V-Groove, and ES Metals perforated aluminum screening.",
+    "GW-7000, ES-7525, ES-46T, ES-9000, 4mm ALUCOBOND ACM, 6-inch LumaBuilt V-Groove, and ES perforated aluminum screening.",
   productIds: [
     "gw-7000",
     "es-7525",

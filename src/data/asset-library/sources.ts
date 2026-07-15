@@ -93,7 +93,7 @@ export const assetLibrarySources: AssetLibrarySource[] = [
   {
     id: "es-metals-project-detail",
     title: "Magnolia Garage Screening Detail",
-    owner: "ES Metals",
+    owner: "ES",
     kind: "project-deck",
     localPath: "/documents/magnolia-landing-deck.pdf#page=11",
     retrievedAt: "2026-07-14",

@@ -135,7 +135,7 @@ export function PresenterDrawer({
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="font-mono text-[8px] uppercase text-white/38">
-                          {product.vendor === "es" ? "ES" : product.vendor === "esmetals" ? "ES Metals" : product.vendor === "lumabuilt" ? "LumaBuilt" : product.vendor === "alucobond" ? "ALUCOBOND" : "Saint-Gobain Glass"}
+                          {product.vendor === "es" || product.vendor === "esmetals" ? "ES" : product.vendor === "lumabuilt" ? "LumaBuilt" : product.vendor === "alucobond" ? "ALUCOBOND" : "Saint-Gobain Glass"}
                         </p>
                         <p className="mt-1 text-sm font-semibold">{product.name}</p>
                       </div>
