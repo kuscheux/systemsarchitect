@@ -48,6 +48,7 @@ type ProjectMapCoreProps = {
   onInteractionEnd?: () => void;
   routeCoordinates?: [number, number][];
   routeProgress?: number;
+  cameraDurationMs?: number;
   className?: string;
 };
 
@@ -292,6 +293,7 @@ export const ProjectMapCore = forwardRef<
     onInteractionEnd,
     routeCoordinates = [],
     routeProgress = 0,
+    cameraDurationMs = 1100,
     className = "h-full w-full",
   },
   forwardedRef,
@@ -529,10 +531,10 @@ export const ProjectMapCore = forwardRef<
       zoom: 16.4,
       pitch: 66,
       bearing: -20,
-      duration: reducedMotion ? 0 : 1100,
+      duration: reducedMotion ? 0 : cameraDurationMs,
       essential: !reducedMotion,
     });
-  }, [mode, ready, reducedMotion, selectedId]);
+  }, [cameraDurationMs, mode, ready, reducedMotion, selectedId]);
 
   useEffect(() => {
     if (!ready || appearanceRef.current === appearance) return;

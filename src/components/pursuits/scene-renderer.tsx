@@ -485,6 +485,9 @@ type CharlestonRouteData = {
   durationSeconds: number;
 };
 
+const ROUTE_SPEEDS = [0.25, 0.5, 1, 2] as const;
+type RouteSpeed = (typeof ROUTE_SPEEDS)[number];
+
 function RouteScene({
   scene,
   appearance,
@@ -494,6 +497,7 @@ function RouteScene({
   const [route, setRoute] = useState<CharlestonRouteData | null>(null);
   const [progress, setProgress] = useState(0);
   const [playing, setPlaying] = useState(true);
+  const [speed, setSpeed] = useState<RouteSpeed>(0.25);
   const [mapInteracting, setMapInteracting] = useState(false);
   const progressRef = useRef(0);
   const reducedMotion = useSyncExternalStore(
@@ -529,7 +533,7 @@ function RouteScene({
   useEffect(() => {
     if (!route || !playing || interactionPaused || mapInteracting) return;
     const startProgress = progressRef.current;
-    const duration = Math.max(20_000, scene.routeDurationMs ?? 72_000);
+    const duration = Math.max(20_000, (scene.routeDurationMs ?? 72_000) / speed);
     let startTime: number | null = null;
     let frame = 0;
     const animate = (time: number) => {
@@ -544,7 +548,7 @@ function RouteScene({
     };
     frame = window.requestAnimationFrame(animate);
     return () => window.cancelAnimationFrame(frame);
-  }, [interactionPaused, mapInteracting, playing, route, scene.routeDurationMs]);
+  }, [interactionPaused, mapInteracting, playing, route, scene.routeDurationMs, speed]);
 
   const currentRouteIndex = route
     ? Math.round(progress * Math.max(0, route.coordinates.length - 1))
@@ -603,6 +607,7 @@ function RouteScene({
           reducedMotion={reducedMotion}
           routeCoordinates={route.coordinates}
           routeProgress={progress}
+          cameraDurationMs={Math.min(5600, Math.max(700, Math.round(1400 / speed)))}
           onInteractionStart={() => setMapInteracting(true)}
           onInteractionEnd={() => setMapInteracting(false)}
         />
@@ -654,6 +659,28 @@ function RouteScene({
         </div>
         <div className="mt-4 h-1 overflow-hidden bg-current/12">
           <div className="h-full bg-[#f20d2f]" style={{ width: `${progress * 100}%` }} />
+        </div>
+        <div className="mt-3 flex items-center justify-between gap-4">
+          <p className="font-mono text-[9px] uppercase opacity-52">Route speed</p>
+          <div className="pointer-events-auto flex border border-current/16" aria-label="Route playback speed">
+            {ROUTE_SPEEDS.map((value) => (
+              <button
+                key={value}
+                type="button"
+                className={`h-8 min-w-12 border-l border-current/16 px-2 font-mono text-[10px] first:border-l-0 ${
+                  speed === value
+                    ? appearance === "dark"
+                      ? "bg-white text-black"
+                      : "bg-black text-white"
+                    : "bg-transparent"
+                }`}
+                onClick={() => setSpeed(value)}
+                aria-pressed={speed === value}
+              >
+                {value}x
+              </button>
+            ))}
+          </div>
         </div>
         {nextStops.length ? (
           <div className="mt-4 hidden grid-cols-3 gap-3 border-t border-current/12 pt-3 sm:grid">
