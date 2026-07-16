@@ -19,6 +19,68 @@ const subscribeReducedMotion = (callback: () => void) => {
 
 const getReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+type RobustModelBounds = {
+  min: THREE.Vector3;
+  max: THREE.Vector3;
+  maxDimension: number;
+};
+
+const quantile = (values: number[], amount: number) => {
+  const index = Math.min(values.length - 1, Math.max(0, Math.floor((values.length - 1) * amount)));
+  return values[index] ?? 0;
+};
+
+const getRobustModelBounds = (object: THREE.Object3D): RobustModelBounds => {
+  const axes: [number[], number[], number[]] = [[], [], []];
+
+  object.traverse((child) => {
+    if (!(child instanceof THREE.Mesh)) return;
+    const position = child.geometry.getAttribute("position");
+    for (let index = 0; index < position.count; index += 1) {
+      axes[0].push(position.getX(index));
+      axes[1].push(position.getY(index));
+      axes[2].push(position.getZ(index));
+    }
+  });
+
+  axes.forEach((axis) => axis.sort((a, b) => a - b));
+  const min = new THREE.Vector3(...axes.map((axis) => quantile(axis, 0.05)) as [number, number, number]);
+  const max = new THREE.Vector3(...axes.map((axis) => quantile(axis, 0.95)) as [number, number, number]);
+  const size = max.clone().sub(min);
+
+  return { min, max, maxDimension: Math.max(size.x, size.y, size.z) || 1 };
+};
+
+const removeReferencePlanes = (object: THREE.Object3D, maximumEdge: number) => {
+  const maximumEdgeSquared = maximumEdge * maximumEdge;
+
+  object.traverse((child) => {
+    if (!(child instanceof THREE.Mesh)) return;
+    const source = child.geometry.index ? child.geometry.toNonIndexed() : child.geometry.clone();
+    const position = source.getAttribute("position");
+    const kept: number[] = [];
+    const a = new THREE.Vector3();
+    const b = new THREE.Vector3();
+    const c = new THREE.Vector3();
+
+    for (let index = 0; index + 2 < position.count; index += 3) {
+      a.fromBufferAttribute(position, index);
+      b.fromBufferAttribute(position, index + 1);
+      c.fromBufferAttribute(position, index + 2);
+      const longestEdge = Math.max(a.distanceToSquared(b), b.distanceToSquared(c), c.distanceToSquared(a));
+      if (longestEdge > maximumEdgeSquared) continue;
+      kept.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
+    }
+
+    const filtered = new THREE.BufferGeometry();
+    filtered.setAttribute("position", new THREE.Float32BufferAttribute(kept, 3));
+    filtered.computeVertexNormals();
+    child.geometry.dispose();
+    source.dispose();
+    child.geometry = filtered;
+  });
+};
+
 export function ObjModelViewer({ src, label }: ObjModelViewerProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
@@ -55,7 +117,7 @@ export function ObjModelViewer({ src, label }: ObjModelViewerProps) {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1;
+    renderer.toneMappingExposure = 0.82;
     renderer.setClearColor(0xf7f7f5, 1);
     host.appendChild(renderer.domElement);
 
@@ -69,11 +131,11 @@ export function ObjModelViewer({ src, label }: ObjModelViewerProps) {
     controls.autoRotateSpeed = 0.65;
     controls.saveState();
 
-    scene.add(new THREE.HemisphereLight(0xffffff, 0xcfd4d7, 0.85));
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.8);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xbfc4c8, 0.72));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.05);
     keyLight.position.set(5, 8, 7);
     scene.add(keyLight);
-    const fillLight = new THREE.DirectionalLight(0xbfd6e6, 0.65);
+    const fillLight = new THREE.DirectionalLight(0xbfd6e6, 0.42);
     fillLight.position.set(-6, 2, -5);
     scene.add(fillLight);
 
@@ -87,10 +149,10 @@ export function ObjModelViewer({ src, label }: ObjModelViewerProps) {
     scene.add(ground);
 
     const modelMaterial = new THREE.MeshStandardMaterial({
-      color: 0x8a8f93,
+      color: 0x6f7478,
       side: THREE.DoubleSide,
-      metalness: 0.48,
-      roughness: 0.42,
+      metalness: 0.18,
+      roughness: 0.62,
     });
 
     const loader = new OBJLoader();
@@ -98,6 +160,8 @@ export function ObjModelViewer({ src, label }: ObjModelViewerProps) {
       src,
       (object) => {
         if (disposed) return;
+        const robustBounds = getRobustModelBounds(object);
+        removeReferencePlanes(object, robustBounds.maxDimension * 2);
         object.traverse((child) => {
           if (!(child instanceof THREE.Mesh)) return;
           child.geometry.computeVertexNormals();
@@ -105,28 +169,32 @@ export function ObjModelViewer({ src, label }: ObjModelViewerProps) {
           child.frustumCulled = false;
         });
 
-        const initialBox = new THREE.Box3().setFromObject(object);
-        const initialCenter = initialBox.getCenter(new THREE.Vector3());
-        const initialSize = initialBox.getSize(new THREE.Vector3());
-        const maxDimension = Math.max(initialSize.x, initialSize.y, initialSize.z) || 1;
-        const modelScale = 4.3 / maxDimension;
+        const initialCenter = robustBounds.min.clone().add(robustBounds.max).multiplyScalar(0.5);
+        const modelScale = 4.3 / robustBounds.maxDimension;
         object.scale.setScalar(modelScale);
         object.position.copy(initialCenter).multiplyScalar(-modelScale);
         const modelPivot = new THREE.Group();
         modelPivot.rotation.set(0, -0.42, 0);
+        modelPivot.position.set(-3.5, 0, 0);
         modelPivot.add(object);
         scene.add(modelPivot);
 
-        const fittedBox = new THREE.Box3().setFromObject(modelPivot);
-        const fittedSphere = fittedBox.getBoundingSphere(new THREE.Sphere());
-        const radius = Math.max(fittedSphere.radius, 1);
-        camera.near = radius / 100;
-        camera.far = radius * 100;
-        camera.position.set(radius * 2.35, radius * 1.35, radius * 3.15);
+        modelPivot.updateMatrixWorld(true);
+        const centeredBox = new THREE.Box3(robustBounds.min.clone(), robustBounds.max.clone()).applyMatrix4(object.matrixWorld);
+        const centeredSize = centeredBox.getSize(new THREE.Vector3());
+        const verticalFov = THREE.MathUtils.degToRad(camera.fov);
+        const horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * Math.max(camera.aspect, 1));
+        const verticalDistance = centeredSize.y / (2 * Math.tan(verticalFov / 2));
+        const horizontalDistance = centeredSize.x / (2 * Math.tan(horizontalFov / 2));
+        const distance = Math.max(verticalDistance, horizontalDistance, centeredSize.z) * 2.75;
+        camera.near = Math.max(distance / 100, 0.01);
+        camera.far = distance * 100;
+        camera.position.copy(new THREE.Vector3(1.15, 0.72, 1.5).normalize().multiplyScalar(distance));
+        camera.lookAt(0, 0, 0);
         camera.updateProjectionMatrix();
         controls.target.set(0, 0, 0);
-        controls.minDistance = radius * 1.1;
-        controls.maxDistance = radius * 7;
+        controls.minDistance = distance * 0.35;
+        controls.maxDistance = distance * 4;
         controls.update();
         controls.saveState();
         setIsLoading(false);

@@ -17,6 +17,8 @@ export type SceneMetric = {
 };
 
 export type SceneType =
+  | "deck"
+  | "route"
   | "hero"
   | "scope"
   | "hotspot"
@@ -170,6 +172,8 @@ export type PursuitScene = {
   productVisuals?: ProductVisual[];
   floorSequence?: FloorSequenceStep[];
   referenceProjects?: ReferenceProject[];
+  routeDataUrl?: string;
+  routeDurationMs?: number;
 };
 
 export type PursuitProject = {

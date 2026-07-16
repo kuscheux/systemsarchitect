@@ -8,11 +8,11 @@ import { PresenterDrawer } from "@/components/pursuits/presenter-drawer";
 import { PursuitBrandLockup } from "@/components/pursuits/pursuit-brand-lockup";
 import { SceneRenderer } from "@/components/pursuits/scene-renderer";
 import {
-  chapterFirstSceneIndex,
-  magnoliaChapters,
-  magnoliaScenes,
-  magnoliaSourceReferences,
-} from "@/data/presentation/magnolia-story";
+  magnoliaExpandedChapterFirstSceneIndex as chapterFirstSceneIndex,
+  magnoliaExpandedChapters as magnoliaChapters,
+  magnoliaExpandedScenes as magnoliaScenes,
+  magnoliaExpandedSourceReferences as magnoliaSourceReferences,
+} from "@/data/presentation/magnolia-expanded-story";
 import { magnoliaDecisions, magnoliaHotspots } from "@/data/projects/magnolia";
 import type { Hotspot, MagnoliaChapterId, PresentationTheme } from "@/data/pursuits/types";
 import { magnoliaVendorProducts } from "@/data/vendors";
@@ -242,6 +242,10 @@ export function MagnoliaPresentationPlayer() {
           interactionPaused={drawerOpen}
           onVideoEnded={() => {
             setIsPlaying(false);
+            if (index === 0) {
+              goTo(1);
+              return;
+            }
             setControlsVisible(true);
           }}
         />

@@ -10,6 +10,7 @@ import {
   MapPinned,
   Pause,
   Play,
+  RotateCcw,
 } from "lucide-react";
 import {
   useCallback,
@@ -98,6 +99,49 @@ function StageMedia({
       sizes="100vw"
       className="magnolia-scene-image object-cover"
     />
+  );
+}
+
+function DeckScene({
+  scene,
+  sceneIndex,
+  videoRef,
+  isMuted,
+  onVideoEnded,
+}: Pick<
+  SceneRendererProps,
+  "scene" | "sceneIndex" | "videoRef" | "isMuted" | "onVideoEnded"
+>) {
+  if (scene.video) {
+    return (
+      <section className="absolute inset-0 bg-black">
+        <video
+          ref={videoRef}
+          key={scene.video}
+          className="h-full w-full object-contain"
+          src={scene.video}
+          poster={scene.image}
+          muted={isMuted}
+          playsInline
+          preload={sceneIndex === 0 ? "auto" : "metadata"}
+          onEnded={onVideoEnded}
+        />
+      </section>
+    );
+  }
+
+  return (
+    <section className={`absolute inset-0 ${scene.preferredTheme === "light" ? "bg-[#f4f0e8]" : "bg-[#103f34]"}`}>
+      <Image
+        key={scene.image}
+        src={scene.image}
+        alt={scene.title}
+        fill
+        priority={sceneIndex < 2}
+        sizes="100vw"
+        className="object-contain"
+      />
+    </section>
   );
 }
 
@@ -424,6 +468,208 @@ function ReferenceDetails({
   );
 }
 
+type RouteStop = {
+  id: string;
+  name: string;
+  phase: number;
+  latitude: number;
+  longitude: number;
+  address: string;
+  routeIndex: number;
+};
+
+type CharlestonRouteData = {
+  stops: RouteStop[];
+  coordinates: [number, number][];
+  distanceMeters: number;
+  durationSeconds: number;
+};
+
+function RouteScene({
+  scene,
+  appearance,
+  interactionPaused,
+}: Pick<SceneRendererProps, "scene" | "appearance" | "interactionPaused">) {
+  const mapRef = useRef<ProjectMapCoreHandle | null>(null);
+  const [route, setRoute] = useState<CharlestonRouteData | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [playing, setPlaying] = useState(true);
+  const [mapInteracting, setMapInteracting] = useState(false);
+  const progressRef = useRef(0);
+  const reducedMotion = useSyncExternalStore(
+    subscribeReducedMotion,
+    getReducedMotion,
+    () => false,
+  );
+
+  useEffect(() => {
+    progressRef.current = progress;
+  }, [progress]);
+
+  useEffect(() => {
+    let active = true;
+    void fetch(scene.routeDataUrl ?? "")
+      .then((response) => {
+        if (!response.ok) throw new Error(`Route request failed: ${response.status}`);
+        return response.json() as Promise<CharlestonRouteData>;
+      })
+      .then((data) => {
+        if (!active) return;
+        setRoute(data);
+        setPlaying(true);
+      })
+      .catch(() => {
+        if (active) setRoute(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [reducedMotion, scene.routeDataUrl]);
+
+  useEffect(() => {
+    if (!route || !playing || interactionPaused || mapInteracting) return;
+    const startProgress = progressRef.current;
+    const duration = Math.max(20_000, scene.routeDurationMs ?? 72_000);
+    let startTime: number | null = null;
+    let frame = 0;
+    const animate = (time: number) => {
+      if (startTime === null) startTime = time;
+      const next = Math.min(1, startProgress + (time - startTime) / duration);
+      setProgress(next);
+      if (next >= 1) {
+        setPlaying(false);
+        return;
+      }
+      frame = window.requestAnimationFrame(animate);
+    };
+    frame = window.requestAnimationFrame(animate);
+    return () => window.cancelAnimationFrame(frame);
+  }, [interactionPaused, mapInteracting, playing, route, scene.routeDurationMs]);
+
+  const currentRouteIndex = route
+    ? Math.round(progress * Math.max(0, route.coordinates.length - 1))
+    : 0;
+  const activeStop = route
+    ? [...route.stops]
+        .reverse()
+        .find((stop) => stop.routeIndex <= currentRouteIndex) ?? route.stops[0]
+    : null;
+  const activeStopIndex = route && activeStop
+    ? route.stops.findIndex((stop) => stop.id === activeStop.id)
+    : 0;
+  const nextStops = route
+    ? route.stops.slice(activeStopIndex + 1, activeStopIndex + 4)
+    : [];
+  const locations: MappableProject[] = (route?.stops ?? []).map((stop) => ({
+    id: stop.id,
+    name: stop.name,
+    latitude: stop.latitude,
+    longitude: stop.longitude,
+    kind: stop.name.startsWith("1CG Charleston") ? "office" : "project",
+    status: "complete",
+  }));
+
+  const selectStop = (id: string) => {
+    if (!route) return;
+    const stop = route.stops.find((item) => item.id === id);
+    if (!stop) return;
+    setPlaying(false);
+    setProgress(stop.routeIndex / Math.max(1, route.coordinates.length - 1));
+  };
+
+  const replay = () => {
+    setProgress(0);
+    setPlaying(true);
+    mapRef.current?.fitPreset("charleston");
+  };
+
+  const surface = appearance === "dark"
+    ? "border-white/16 bg-black/82 text-white"
+    : "border-black/12 bg-white/92 text-black";
+
+  return (
+    <section className={`absolute inset-0 overflow-hidden ${appearance === "dark" ? "bg-[#080b0d] text-white" : "bg-[#f3f3f0] text-black"}`}>
+      {route ? (
+        <ProjectMapCore
+          ref={mapRef}
+          locations={locations}
+          selectedId={activeStop?.id}
+          onSelect={selectStop}
+          cameraPreset="charleston"
+          appearance={appearance}
+          mode="presentation"
+          showBuildings
+          showControls={false}
+          reducedMotion={reducedMotion}
+          routeCoordinates={route.coordinates}
+          routeProgress={progress}
+          onInteractionStart={() => setMapInteracting(true)}
+          onInteractionEnd={() => setMapInteracting(false)}
+        />
+      ) : (
+        <div className="absolute inset-0 grid place-items-center text-sm opacity-54">
+          Loading the Charleston route...
+        </div>
+      )}
+
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-black/60 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-black/78 via-black/34 to-transparent" />
+
+      <div className="absolute left-5 top-20 z-20 max-w-[620px] text-white sm:left-8 sm:top-24 lg:left-12">
+        <p className="font-mono text-[10px] uppercase opacity-66">Charleston field route</p>
+        <h1 className="mt-3 text-[clamp(2.6rem,5vw,6.5rem)] font-semibold leading-[0.88] tracking-normal">
+          45 stops.<br />One continuous run.
+        </h1>
+      </div>
+
+      <div className={`absolute bottom-20 left-4 z-20 w-[min(520px,calc(100%-2rem))] border p-4 sm:bottom-24 sm:left-8 sm:p-5 lg:left-12 ${surface}`}>
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="font-mono text-[9px] uppercase opacity-52">
+              Phase {activeStop?.phase ?? 1} · Stop {String(activeStopIndex + 1).padStart(2, "0")} / 45
+            </p>
+            <h2 className="mt-2 truncate text-xl font-semibold sm:text-2xl">
+              {activeStop?.name ?? "Preparing route"}
+            </h2>
+            <p className="mt-1 truncate text-xs opacity-56">{activeStop?.address}</p>
+          </div>
+          <div className="flex shrink-0 gap-2">
+            <button
+              type="button"
+              className="pointer-events-auto grid size-10 place-items-center border border-current/16"
+              onClick={() => setPlaying((value) => !value)}
+              aria-label={playing ? "Pause route" : "Play route"}
+            >
+              {playing ? <Pause size={15} /> : <Play size={15} />}
+            </button>
+            <button
+              type="button"
+              className="pointer-events-auto grid size-10 place-items-center border border-current/16"
+              onClick={replay}
+              aria-label="Replay route"
+            >
+              <RotateCcw size={15} />
+            </button>
+          </div>
+        </div>
+        <div className="mt-4 h-1 overflow-hidden bg-current/12">
+          <div className="h-full bg-[#f20d2f]" style={{ width: `${progress * 100}%` }} />
+        </div>
+        {nextStops.length ? (
+          <div className="mt-4 hidden grid-cols-3 gap-3 border-t border-current/12 pt-3 sm:grid">
+            {nextStops.map((stop) => (
+              <div key={stop.id} className="min-w-0">
+                <p className="font-mono text-[8px] uppercase opacity-42">Up next</p>
+                <p className="mt-1 truncate text-[11px] font-medium">{stop.name}</p>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
 export function ReferenceScene({
   scene,
   appearance,
@@ -617,6 +863,8 @@ export function SceneRenderer(props: SceneRendererProps) {
   };
 
   switch (props.scene.type) {
+    case "deck": return <DeckScene scene={props.scene} sceneIndex={props.sceneIndex} videoRef={props.videoRef} isMuted={props.isMuted} onVideoEnded={props.onVideoEnded} />;
+    case "route": return <RouteScene scene={props.scene} appearance={props.appearance} interactionPaused={props.interactionPaused} />;
     case "hero": return <HeroScene {...common} />;
     case "scope": return <ScopeScene {...common} />;
     case "hotspot": return <HotspotScene scene={props.scene} appearance={props.appearance} hotspots={props.hotspots} activeHotspotId={props.activeHotspotId} onSelectHotspot={props.onSelectHotspot} />;

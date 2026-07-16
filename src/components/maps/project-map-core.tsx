@@ -8,7 +8,11 @@ import {
   useRef,
   useState,
 } from "react";
-import type { Map as MapLibreMap, Marker as MapLibreMarker } from "maplibre-gl";
+import type {
+  GeoJSONSource,
+  Map as MapLibreMap,
+  Marker as MapLibreMarker,
+} from "maplibre-gl";
 import type { PresentationAppearance } from "@/data/pursuits/types";
 
 export type MapCameraPreset = "southeast" | "charlotte" | "charleston";
@@ -42,6 +46,8 @@ type ProjectMapCoreProps = {
   reducedMotion?: boolean;
   onInteractionStart?: () => void;
   onInteractionEnd?: () => void;
+  routeCoordinates?: [number, number][];
+  routeProgress?: number;
   className?: string;
 };
 
@@ -113,6 +119,159 @@ function addBuildingExtrusions(
   );
 }
 
+const ROUTE_FULL_SOURCE = "1cg-route-full";
+const ROUTE_PROGRESS_SOURCE = "1cg-route-progress";
+const ROUTE_HEAD_SOURCE = "1cg-route-head";
+
+function lineFeature(coordinates: [number, number][]) {
+  return {
+    type: "Feature" as const,
+    properties: {},
+    geometry: {
+      type: "LineString" as const,
+      coordinates,
+    },
+  };
+}
+
+function headFeature(coordinate: [number, number] | null) {
+  return {
+    type: "Feature" as const,
+    properties: {},
+    geometry: {
+      type: "Point" as const,
+      coordinates: coordinate ?? ([0, 0] as [number, number]),
+    },
+  };
+}
+
+function progressCoordinates(
+  coordinates: [number, number][],
+  progress: number,
+) {
+  if (coordinates.length < 2) return coordinates;
+  const clamped = Math.max(0, Math.min(1, progress));
+  const position = clamped * (coordinates.length - 1);
+  const index = Math.min(coordinates.length - 2, Math.floor(position));
+  const fraction = position - index;
+  const start = coordinates[index];
+  const end = coordinates[index + 1];
+  const head: [number, number] = [
+    start[0] + (end[0] - start[0]) * fraction,
+    start[1] + (end[1] - start[1]) * fraction,
+  ];
+  return [...coordinates.slice(0, index + 1), head];
+}
+
+function ensureRouteLayers(
+  map: MapLibreMap,
+  appearance: PresentationAppearance,
+) {
+  if (!map.getSource(ROUTE_FULL_SOURCE)) {
+    map.addSource(ROUTE_FULL_SOURCE, {
+      type: "geojson",
+      data: lineFeature([]),
+    });
+  }
+  if (!map.getSource(ROUTE_PROGRESS_SOURCE)) {
+    map.addSource(ROUTE_PROGRESS_SOURCE, {
+      type: "geojson",
+      data: lineFeature([]),
+    });
+  }
+  if (!map.getSource(ROUTE_HEAD_SOURCE)) {
+    map.addSource(ROUTE_HEAD_SOURCE, {
+      type: "geojson",
+      data: headFeature(null),
+    });
+  }
+
+  if (!map.getLayer("1cg-route-base")) {
+    map.addLayer({
+      id: "1cg-route-base",
+      type: "line",
+      source: ROUTE_FULL_SOURCE,
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": appearance === "dark" ? "#ffffff" : "#111111",
+        "line-width": 2,
+        "line-opacity": 0.2,
+      },
+    });
+  }
+  if (!map.getLayer("1cg-route-glow")) {
+    map.addLayer({
+      id: "1cg-route-glow",
+      type: "line",
+      source: ROUTE_PROGRESS_SOURCE,
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": "#ff2638",
+        "line-width": 14,
+        "line-opacity": 0.34,
+        "line-blur": 9,
+      },
+    });
+  }
+  if (!map.getLayer("1cg-route-line")) {
+    map.addLayer({
+      id: "1cg-route-line",
+      type: "line",
+      source: ROUTE_PROGRESS_SOURCE,
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: {
+        "line-color": "#f20d2f",
+        "line-width": 4,
+        "line-opacity": 0.96,
+      },
+    });
+  }
+  if (!map.getLayer("1cg-route-head-glow")) {
+    map.addLayer({
+      id: "1cg-route-head-glow",
+      type: "circle",
+      source: ROUTE_HEAD_SOURCE,
+      paint: {
+        "circle-radius": 20,
+        "circle-color": "#ff2638",
+        "circle-opacity": 0.42,
+        "circle-blur": 0.72,
+      },
+    });
+  }
+  if (!map.getLayer("1cg-route-head")) {
+    map.addLayer({
+      id: "1cg-route-head",
+      type: "circle",
+      source: ROUTE_HEAD_SOURCE,
+      paint: {
+        "circle-radius": 7,
+        "circle-color": "#ffffff",
+        "circle-stroke-color": "#f20d2f",
+        "circle-stroke-width": 4,
+      },
+    });
+  }
+}
+
+function updateRoute(
+  map: MapLibreMap,
+  coordinates: [number, number][],
+  progress: number,
+) {
+  ensureRouteLayers(map, "dark");
+  const visibleCoordinates = progressCoordinates(coordinates, progress);
+  (map.getSource(ROUTE_FULL_SOURCE) as GeoJSONSource | undefined)?.setData(
+    lineFeature(coordinates),
+  );
+  (map.getSource(ROUTE_PROGRESS_SOURCE) as GeoJSONSource | undefined)?.setData(
+    lineFeature(visibleCoordinates),
+  );
+  (map.getSource(ROUTE_HEAD_SOURCE) as GeoJSONSource | undefined)?.setData(
+    headFeature(visibleCoordinates.at(-1) ?? null),
+  );
+}
+
 export const ProjectMapCore = forwardRef<
   ProjectMapCoreHandle,
   ProjectMapCoreProps
@@ -131,6 +290,8 @@ export const ProjectMapCore = forwardRef<
     reducedMotion = false,
     onInteractionStart,
     onInteractionEnd,
+    routeCoordinates = [],
+    routeProgress = 0,
     className = "h-full w-full",
   },
   forwardedRef,
@@ -145,6 +306,8 @@ export const ProjectMapCore = forwardRef<
   const onInteractionStartRef = useRef(onInteractionStart);
   const onInteractionEndRef = useRef(onInteractionEnd);
   const selectedCameraIdRef = useRef<string | null>(null);
+  const routeCoordinatesRef = useRef(routeCoordinates);
+  const routeProgressRef = useRef(routeProgress);
   const [ready, setReady] = useState(false);
 
   locationsRef.current = locations;
@@ -152,6 +315,8 @@ export const ProjectMapCore = forwardRef<
   onHighlightRef.current = onHighlight;
   onInteractionStartRef.current = onInteractionStart;
   onInteractionEndRef.current = onInteractionEnd;
+  routeCoordinatesRef.current = routeCoordinates;
+  routeProgressRef.current = routeProgress;
 
   const fitPreset = useCallback(
     (preset: MapCameraPreset = cameraPreset) => {
@@ -257,6 +422,14 @@ export const ProjectMapCore = forwardRef<
 
       const configureStyle = () => {
         if (showBuildings) addBuildingExtrusions(map, appearanceRef.current);
+        if (routeCoordinatesRef.current.length > 1) {
+          ensureRouteLayers(map, appearanceRef.current);
+          updateRoute(
+            map,
+            routeCoordinatesRef.current,
+            routeProgressRef.current,
+          );
+        }
         map.setLight({
           anchor: "viewport",
           color: appearanceRef.current === "dark" ? "#b9c2cc" : "#ffffff",
@@ -366,6 +539,11 @@ export const ProjectMapCore = forwardRef<
     appearanceRef.current = appearance;
     mapRef.current?.setStyle(STYLE_URLS[appearance]);
   }, [appearance, ready]);
+
+  useEffect(() => {
+    if (!ready || !mapRef.current || routeCoordinates.length < 2) return;
+    updateRoute(mapRef.current, routeCoordinates, routeProgress);
+  }, [ready, routeCoordinates, routeProgress]);
 
   return (
     <div className="relative h-full w-full overflow-hidden">
